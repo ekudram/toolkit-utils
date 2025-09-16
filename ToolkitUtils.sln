@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29806.167
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolkitUtils", "Source\ToolkitUtils\ToolkitUtils.csproj", "{03518130-CE79-47FD-9273-36B2C61CD05C}"
 EndProject
@@ -13,8 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolkitUtils.HAR", "Source\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{036FB87D-EE39-4A85-AA67-001B54377E00}"
 	ProjectSection(SolutionItems) = preProject
-		Directory.Build.targets = Directory.Build.targets
 		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolkitUtils.Patches", "Source\ToolkitUtils.Patches\ToolkitUtils.Patches.csproj", "{5566955F-F100-40F7-8FCE-23B324B87DA7}"
@@ -33,18 +32,18 @@ Global
 		{03518130-CE79-47FD-9273-36B2C61CD05C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03518130-CE79-47FD-9273-36B2C61CD05C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03518130-CE79-47FD-9273-36B2C61CD05C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{737FFF7C-F038-4BAF-B6D4-AED03E1AB9B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{737FFF7C-F038-4BAF-B6D4-AED03E1AB9B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{737FFF7C-F038-4BAF-B6D4-AED03E1AB9B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{737FFF7C-F038-4BAF-B6D4-AED03E1AB9B6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{54AAFC16-188A-44A2-AB87-601270F69D1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{54AAFC16-188A-44A2-AB87-601270F69D1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{54AAFC16-188A-44A2-AB87-601270F69D1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{54AAFC16-188A-44A2-AB87-601270F69D1C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D0B7C9CD-F49D-413D-8EDC-32989742F3C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D0B7C9CD-F49D-413D-8EDC-32989742F3C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0B7C9CD-F49D-413D-8EDC-32989742F3C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0B7C9CD-F49D-413D-8EDC-32989742F3C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54AAFC16-188A-44A2-AB87-601270F69D1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54AAFC16-188A-44A2-AB87-601270F69D1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54AAFC16-188A-44A2-AB87-601270F69D1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54AAFC16-188A-44A2-AB87-601270F69D1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{737FFF7C-F038-4BAF-B6D4-AED03E1AB9B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{737FFF7C-F038-4BAF-B6D4-AED03E1AB9B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{737FFF7C-F038-4BAF-B6D4-AED03E1AB9B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{737FFF7C-F038-4BAF-B6D4-AED03E1AB9B6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5566955F-F100-40F7-8FCE-23B324B87DA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5566955F-F100-40F7-8FCE-23B324B87DA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5566955F-F100-40F7-8FCE-23B324B87DA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -55,5 +54,10 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AD41FE2C-7849-4C1F-ACEA-CFF2B1F4692E}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Source\ToolkitUtils.UX\ToolkitUtils.UX.projitems*{03518130-ce79-47fd-9273-36b2c61cd05c}*SharedItemsImports = 5
+		Source\ToolkitUtils.UX\ToolkitUtils.UX.projitems*{44f44f8a-0f9d-443f-8d34-5d29aad0475b}*SharedItemsImports = 13
+		Source\ToolkitUtils.Metadata\ToolkitUtils.Metadata.projitems*{bc753d15-d5f6-43f5-96a9-b2e55a3fd2a8}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

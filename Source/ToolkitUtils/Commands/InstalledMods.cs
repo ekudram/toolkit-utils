@@ -23,6 +23,7 @@ using SirRandoo.ToolkitUtils.Utils;
 using TwitchLib.Client.Models.Interfaces;
 using TwitchToolkit;
 using Verse;
+using Toolkit;  
 
 namespace SirRandoo.ToolkitUtils.Commands;
 
@@ -31,7 +32,8 @@ public class InstalledMods : CommandBase
 {
     public override void RunCommand(ITwitchMessage twitchMessage)
     {
-        twitchMessage.Reply(Data.Mods.Select(FormatMod).SectionJoin().WithHeader($"Toolkit v{Toolkit.Mod.Version}"));
+        //twitchMessage.Reply(Data.Mods.Select(FormatMod).SectionJoin().WithHeader($"Toolkit v{Toolkit.Mod.Version}"));
+        twitchMessage.Reply(Data.Mods.Select(FormatMod).SectionJoin().WithHeader($"Toolkit v{TwitchToolkit.Toolkit.Mod.Version}"));
     }
 
     private static string FormatMod(ModItem mod) =>
