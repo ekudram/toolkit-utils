@@ -6,7 +6,7 @@
         <OutputPath>..\..\$(RimWorldVersion)\Assemblies\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj"/>
+        <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Compile Update="Events\PurchaseHandlerPatch.ResolveVariables.cs">
@@ -24,5 +24,10 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Include="TwitchToolkit">
+        <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkit\v1.6\Assemblies\TwitchToolkit.dll</HintPath>
+      </Reference>
     </ItemGroup>
 </Project>

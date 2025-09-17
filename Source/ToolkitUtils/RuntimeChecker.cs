@@ -25,7 +25,7 @@ using TwitchToolkit;
 using TwitchToolkit.Incidents;
 using TwitchToolkit.Store;
 using Verse;
-using Toolkit = TwitchToolkit.TwitchToolkit;
+// using Toolkit = TwitchToolkit.TwitchToolkit;
 
 
 
@@ -83,33 +83,66 @@ internal static class RuntimeChecker
     {
         FieldInfo tickerField = AccessTools.Field(typeof(TwitchToolkit.TwitchToolkit), "ticker");
 
-        if (tickerField.GetValue(Toolkit.Mod) is not Ticker ticker)
+        if (tickerField.GetValue(TwitchToolkit.Toolkit.Mod) is not Ticker ticker)
         {
-            TkUtils.Logger.Warn($"Could not lance Toolkit's ticker; it was an unexpected value of {tickerField.GetValue(Toolkit.Mod).GetType().FullDescription()}");
-
+            TkUtils.Logger.Warn($"Could not lance Toolkit's ticker; it was an unexpected value of {tickerField.GetValue(TwitchToolkit.Toolkit.Mod).GetType().FullDescription()}");
             return;
         }
 
         try
         {
-            (AccessTools.Field(typeof(Ticker), "_registerThread").GetValue(ticker) as Thread)?.Interrupt();
+            // No longer need to interrupt a thread since it was removed
+            // The timer field is obsolete but we'll still handle it for compatibility
+#pragma warning disable CS0618 // Type or member is obsolete
+            ticker.timer?.Change(0, 0);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            ticker.Discard(true);
+            tickerField.SetValue(TwitchToolkit.Toolkit.Mod, null);
 
             TkUtils.Logger.Warn(
                 new StringBuilder().Append("Successfully lanced Twitch Toolkit's ticker.\n")
-                   .Append("A message from RimWorld about discarding an unnamed def can be safely ignored.\n")
-                   .Append("An exception about aborting a thread can be safely ignored.")
+                   .Append("The threading system has been updated to use RimWorld's tick manager.\n")
+                   .Append("This message is for backward compatibility only.")
                    .ToString()
             );
         }
         catch (Exception e)
         {
-            TkUtils.Logger.Error("Could not abort Toolkit's ticker thread", e);
+            TkUtils.Logger.Error("Could not abort Toolkit's ticker", e);
         }
-
-        ticker.timer?.Change(0, 0);
-        ticker.Discard(true);
-        tickerField.SetValue(Toolkit.Mod, null);
     }
+    //private static void TryLanceTicker()
+    //{
+    //    FieldInfo tickerField = AccessTools.Field(typeof(TwitchToolkit.TwitchToolkit), "ticker");
+
+    //    if (tickerField.GetValue(TwitchToolkit.Toolkit.Mod) is not Ticker ticker)
+    //    {
+    //        TkUtils.Logger.Warn($"Could not lance Toolkit's ticker; it was an unexpected value of {tickerField.GetValue(TwitchToolkit.Toolkit.Mod).GetType().FullDescription()}");
+
+    //        return;
+    //    }
+
+    //    try
+    //    {
+    //        (AccessTools.Field(typeof(Ticker), "_registerThread").GetValue(ticker) as Thread)?.Interrupt();
+
+    //        TkUtils.Logger.Warn(
+    //            new StringBuilder().Append("Successfully lanced Twitch Toolkit's ticker.\n")
+    //               .Append("A message from RimWorld about discarding an unnamed def can be safely ignored.\n")
+    //               .Append("An exception about aborting a thread can be safely ignored.")
+    //               .ToString()
+    //        );
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        TkUtils.Logger.Error("Could not abort Toolkit's ticker thread", e);
+    //    }
+
+    //    ticker.timer?.Change(0, 0);
+    //    ticker.Discard(true);
+    //    tickerField.SetValue(TwitchToolkit.Toolkit.Mod, null);
+    //}
 
     public static void ValidateTicker()
     {
@@ -129,13 +162,13 @@ internal static class RuntimeChecker
         {
             FieldInfo field = AccessTools.Field("TwitchToolkit.TwitchToolkit:ticker");
 
-            if (field.GetValue(Toolkit.Mod) is Ticker _)
+            if (field.GetValue(TwitchToolkit.Toolkit.Mod) is Ticker _)
             {
                 return;
             }
 
             AccessTools.StaticFieldRefAccess<Ticker>("TwitchToolkit.Ticker:_instance") = null!;
-            Toolkit.Mod.RegisterTicker();
+            TwitchToolkit.Toolkit.Mod.RegisterTicker();
         }
         catch (Exception e)
         {

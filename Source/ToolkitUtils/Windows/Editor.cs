@@ -256,7 +256,7 @@ public class Editor : Window
 
         Store_ItemEditor.UpdateStoreItemList();
         Store_IncidentEditor.UpdatePriceSheet();
-        Toolkit.Mod.WriteSettings();
+        Toolkit.Mod.WriteSettings(); // TwitchToolkit.Toolkit.Mod.WriteSettings();
 
         Task.Run(
                 async () =>
