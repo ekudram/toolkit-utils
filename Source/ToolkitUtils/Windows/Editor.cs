@@ -14,14 +14,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using RimWorld;
 using SirRandoo.ToolkitUtils.Models;
 using SirRandoo.ToolkitUtils.Workers;
-using ToolkitUtils.UX;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolkit;
+using ToolkitUtils.UX;
 using TwitchToolkit;
 using TwitchToolkit.Store;
 using UnityEngine;
@@ -256,29 +257,40 @@ public class Editor : Window
 
         Store_ItemEditor.UpdateStoreItemList();
         Store_IncidentEditor.UpdatePriceSheet();
-        Toolkit.Mod.WriteSettings(); // TwitchToolkit.Toolkit.Mod.WriteSettings();
+        TwitchToolkit.Toolkit.Mod.WriteSettings();
 
-        Task.Run(
-                async () =>
-                {
-                    switch (TkSettings.DumpStyle)
-                    {
-                        case "SingleFile":
-                            await Data.SaveLegacyShopAsync(Paths.LegacyShopDumpFilePath);
+        // Queue the save operation using RimWorld's thread-safe handler
+        LongEventHandler.QueueLongEvent(
+            () => ExecuteSaveOperations(),
+            "TKUtilsSavingData",
+            false,
+            exception => Log.Error($"Error saving TKUtils data: {exception}")
+        );
+    }
 
-                            return;
-                        case "MultiFile":
-                            await Data.SaveTraitsAsync(Paths.TraitFilePath);
-                            await Data.SavePawnKindsAsync(Paths.PawnKindFilePath);
-
-                            return;
-                    }
-
-                    await Data.SaveItemDataAsync(Paths.ItemDataFilePath);
-                    await Data.SaveEventDataAsync(Paths.EventDataFilePath);
-                }
-            )
-           .ConfigureAwait(false);
+    private void ExecuteSaveOperations()
+    {
+        try
+        {
+            switch (TkSettings.DumpStyle)
+            {
+                case "SingleFile":
+                    Data.SaveLegacyShopAsync(Paths.LegacyShopDumpFilePath).GetAwaiter().GetResult();
+                    break;
+                case "MultiFile":
+                    Data.SaveTraitsAsync(Paths.TraitFilePath).GetAwaiter().GetResult();
+                    Data.SavePawnKindsAsync(Paths.PawnKindFilePath).GetAwaiter().GetResult();
+                    break;
+                default:
+                    Data.SaveItemDataAsync(Paths.ItemDataFilePath).GetAwaiter().GetResult();
+                    Data.SaveEventDataAsync(Paths.EventDataFilePath).GetAwaiter().GetResult();
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Failed to save TKUtils data: {ex}");
+        }
     }
 
     protected override void SetInitialSizeAndPosition()
