@@ -131,10 +131,24 @@ public static class Json
         }
 
         using (var reader = new StreamReader(stream))
+        using (var jsonReader = new JsonTextReader(reader))
         {
-            return await Serializer!.DeserializeAsync(reader, typeof(T)) as T;
+            return Serializer!.Deserialize<T>(jsonReader);
         }
     }
+
+    //public static async Task<T?> DeserializeAsync<T>(Stream stream) where T : class
+    //{
+    //    if (SerializationDisabled)
+    //    {
+    //        return default;
+    //    }
+
+    //    using (var reader = new StreamReader(stream))
+    //    {
+    //        return await Serializer!.DeserializeAsync(reader, typeof(T)) as T;
+    //    }
+    //}
 
     /// <summary>
     ///     Serializes data from <see cref="obj" /> into the associated <see cref="Stream" />.
@@ -163,10 +177,36 @@ public static class Json
         }
 
         using (var writer = new StreamWriter(stream))
+        using (var jsonWriter = new JsonTextWriter(writer))
         {
-            await serializer.SerializeAsync(writer, obj);
+            serializer.Serialize(jsonWriter, obj);
+            await writer.FlushAsync(); // Ensure all data is written to the stream
         }
     }
+    //public static async Task SerializeAsync<T>(Stream stream, [DisallowNull] T obj, bool pretty)
+    //{
+    //    if (SerializationDisabled)
+    //    {
+    //        return;
+    //    }
+
+    //    JsonSerializer? serializer = pretty ? PrettySerializer : Serializer;
+
+    //    if (MinificationOverridden)
+    //    {
+    //        serializer = MinifyOverride ? PrettySerializer : Serializer;
+    //    }
+
+    //    if (serializer == null)
+    //    {
+    //        return;
+    //    }
+
+    //    using (var writer = new StreamWriter(stream))
+    //    {
+    //        await serializer.SerializeAsync(writer, obj); // <-- Error:  'JsonSerializer' does not contain a definition for 'SerializeAsync' and no accessible extension method 'SerializeAsync' accepting a first argument of type 'JsonSerializer' could be found (are you missing a using directive or an assembly reference?)
+    //    }
+    //}
 
     /// <summary>
     ///     Deserializes data from a <see cref="Stream" /> into the associated object <see cref="T" />.

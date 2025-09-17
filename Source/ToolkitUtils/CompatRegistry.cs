@@ -46,7 +46,7 @@ public static class CompatRegistry
     ///     Whether Twitch Toolkit is compatible with the current version of
     ///     RimWorld.
     /// </summary>
-    public static bool ToolkitCompatible { get; } = Toolkit.Mod.Content.ModMetaData.VersionCompatible;
+    public static bool ToolkitCompatible { get; } = TwitchToolkit.Toolkit.Mod.Content.ModMetaData.VersionCompatible;
 
     /// <summary>
     ///     The main compatibility provider for Humanoid Alien Races.
