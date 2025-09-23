@@ -13,6 +13,11 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// File: Source/ToolkitUtils/Patches/Commands/CommandsHandlerPatch.cs
+// Project: ToolkitUtils
+// Usage: Patch to modify Twitch Toolkit and Core command handling
+
 
 using System;
 using System.Collections.Generic;
@@ -23,7 +28,7 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using Verse;
 using Command = TwitchToolkit.Command;
@@ -42,11 +47,15 @@ internal static class CommandsHandlerPatch
 {
     private static IEnumerable<MethodBase> TargetMethods()
     {
+        TkUtils.Logger.Debug("[TKUtils] CommandsHandlerPatch.TargetMethods called.");
+
         yield return AccessTools.Method(typeof(CommandsHandler), nameof(CommandsHandler.CheckCommand));
     }
 
     private static Exception? Cleanup(MethodBase original, Exception? exception)
     {
+        TkUtils.Logger.Debug("[TKUtils] CommandsHandlerPatch.Cleanup called.");
+
         if (exception == null)
         {
             return null;
@@ -57,8 +66,10 @@ internal static class CommandsHandlerPatch
         return null;
     }
 
-    private static bool Prefix(ITwitchMessage? twitchMessage)
+    private static bool Prefix(TwitchMessageWrapper? twitchMessage)
     {
+        TkUtils.Logger.Debug($"[TKUtils] CommandsHandlerPatch.Prefix started. TkSettings.Commands is {TkSettings.Commands}");
+
         if (!TkSettings.Commands || twitchMessage == null || string.IsNullOrEmpty(twitchMessage.Message) || string.IsNullOrEmpty(twitchMessage.Username))
         {
             return !TkSettings.Commands;
@@ -92,7 +103,7 @@ internal static class CommandsHandlerPatch
             segments = segments.Where(i => !i.EqualsIgnoreCase("--text")).ToList();
         }
 
-        LocateCommand(segments.ToArray())?.Execute(twitchMessage.WithMessage("!" + CombineSegments(segments).Trim())!, text);
+        LocateCommand(segments.ToArray())?.Execute(twitchMessage.Message("!" + CombineSegments(segments).Trim())!, text);
 
         return false;
     }
@@ -100,6 +111,7 @@ internal static class CommandsHandlerPatch
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     private static Exception? Finalizer(Exception? __exception)
     {
+        TkUtils.Logger.Debug("[TKUtils] CommandsHandlerPatch.Finalizer finished.");
         if (__exception != null)
         {
             TkUtils.Logger.Error("Command parser encountered an error", __exception);
@@ -110,11 +122,15 @@ internal static class CommandsHandlerPatch
 
     private static string CombineSegments(IEnumerable<string> segments)
     {
+        TkUtils.Logger.Debug($"[TKUtils] Combining segments: {string.Join(", ", segments)}");
+
         return string.Join(" ", segments.Select(s => s.Contains(' ') ? $@"""{s.Replace("\"", "\\\"")}""" : s).ToArray());
     }
 
     private static Command? LocateCommand(string[] query)
     {
+        TkUtils.Logger.Debug($"[TKUtils] Locating command from segments: {string.Join(", ", query)}");
+
         foreach (Command commandDef in DefDatabase<Command>.AllDefs.Where(c => c.enabled))
         {
             if (commandDef.command.Contains(" "))
@@ -142,7 +158,9 @@ internal static class CommandsHandlerPatch
     }
 
     private static bool IsCommand(string command, string input)
-    {
+    {   
+        TkUtils.Logger.Debug($"[TKUtils] Comparing command '{command}' to input '{input}'");
+
         if (TkSettings.ToolkitStyleCommands && input.StartsWith(command, StringComparison.InvariantCultureIgnoreCase))
         {
             return true;
@@ -153,6 +171,8 @@ internal static class CommandsHandlerPatch
 
     private static string? GetCommandString(string message)
     {
+        TkUtils.Logger.Debug($"[TKUtils] Getting command string from message: {message}");
+
         if (message.StartsWith("/w"))
         {
             message = message[3..];

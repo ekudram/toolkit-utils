@@ -17,7 +17,7 @@
 using System;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Models;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using UnityEngine;
 
@@ -25,8 +25,14 @@ namespace SirRandoo.ToolkitUtils.Helpers;
 
 public static class CommandHelper
 {
-    public static void Execute(this Command command, ITwitchMessage message, bool emojiOverride = false)
+    public static void Execute(this Command command, TwitchMessageWrapper message, bool emojiOverride = false)
     {
+        TkUtils.Logger.Debug($"[TKUtils] CommandHelper.Execute started for command {command.command} (defName: {command.defName}) by user {message.Username}");
+        if (command == null || message == null || string.IsNullOrEmpty(message.Message) || string.IsNullOrEmpty(message.Username))
+        {
+            TkUtils.Logger.Debug("[TKUtils] CommandHelper.Execute exiting early due to null/empty values.");
+            return;
+        }
         if (command.requiresAdmin && !message.HasBadges("broadcaster"))
         {
             return;
@@ -63,8 +69,10 @@ public static class CommandHelper
         }
     }
 
-    private static void ExecuteInternal(Command command, ITwitchMessage message)
+    private static void ExecuteInternal(Command command, TwitchMessageWrapper message)
     {
+        TkUtils.Logger.Debug($"[TKUtils] CommandHelper.ExecuteInternal started for command {command.command} (defName: {command.defName}) by user {message.Username}");
+
         try
         {
             command.RunCommand(message);
@@ -88,6 +96,12 @@ public static class CommandHelper
 
     internal static string ValidatePrefix(string prefix)
     {
+        TkUtils.Logger.Debug($"[TKUtils] CommandHelper.ValidatePrefix started for prefix {prefix}");
+        if (string.IsNullOrEmpty(prefix))
+        {
+            TkUtils.Logger.Debug("[TKUtils] CommandHelper.ValidatePrefix exiting early due to null/empty prefix.");
+            return string.Empty;
+        }
         if (prefix.StartsWith("/") || prefix.StartsWith("."))
         {
             prefix = prefix[1..];
@@ -98,6 +112,13 @@ public static class CommandHelper
 
     internal static bool IsModerator(this Viewer viewer)
     {
+        TkUtils.Logger.Debug($"[TKUtils] CommandHelper.IsModerator started for viewer {viewer?.username ?? "null"}");
+
+        if (viewer == null || string.IsNullOrEmpty(viewer.username))
+        {
+            TkUtils.Logger.Debug("[TKUtils] CommandHelper.IsModerator exiting early due to null/empty viewer or username.");
+            return false;
+        }
         if (viewer.mod)
         {
             return true;
