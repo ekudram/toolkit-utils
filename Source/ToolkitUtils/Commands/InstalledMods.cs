@@ -20,20 +20,21 @@ using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Models;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using Verse;
-using Toolkit;  
+using Toolkit;
+using ToolkitCore;
 
 namespace SirRandoo.ToolkitUtils.Commands;
 
 [UsedImplicitly]
 public class InstalledMods : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        //twitchMessage.Reply(Data.Mods.Select(FormatMod).SectionJoin().WithHeader($"Toolkit v{Toolkit.Mod.Version}"));
-        twitchMessage.Reply(Data.Mods.Select(FormatMod).SectionJoin().WithHeader($"Toolkit v{TwitchToolkit.Toolkit.Mod.Version}"));
+        //twitchMessage.Reply(Data.Mods.Select(FormatMod).SectionJoin().WithHeader($"Toolkit v{TwitchToolkit.Toolkit.Mod.Version}"));
+        TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {Data.Mods.Select(FormatMod).SectionJoin().WithHeader($"Toolkit v{TwitchToolkit.Toolkit.Mod.Version}")}");
     }
 
     private static string FormatMod(ModItem mod) =>

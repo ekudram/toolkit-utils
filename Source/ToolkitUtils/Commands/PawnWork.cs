@@ -14,15 +14,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using JetBrains.Annotations;
 using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using ToolkitCore;
+using TwitchToolkit;
 using UnityEngine;
 using Verse;
 
@@ -31,19 +32,19 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class PawnWork : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
         {
-            twitchMessage.Reply("TKUtils.NoPawn".Localize().WithHeader("TKUtils.PawnWork.Header".Localize()));
-
+            //twitchMessage.Reply("TKUtils.NoPawn".Localize().WithHeader("TKUtils.PawnWork.Header".Localize()));
+            TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.NoPawn".Localize().WithHeader("TKUtils.PawnWork.Header".Localize())}");
             return;
         }
 
         if (pawn!.workSettings?.EverWork == false)
         {
-            twitchMessage.Reply("TKUtils.PawnWork.None".Localize().WithHeader("TKUtils.PawnWork.Header".Localize()));
-
+            //twitchMessage.Reply("TKUtils.PawnWork.None".Localize().WithHeader("TKUtils.PawnWork.Header".Localize()));
+            TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.PawnWork.None".Localize().WithHeader("TKUtils.PawnWork.Header".Localize())}");
             return;
         }
 
@@ -62,7 +63,7 @@ public class PawnWork : CommandBase
             if (builder.Length > 0)
             {
                 builder.Remove(builder.Length - 2, 2);
-                twitchMessage.Reply("TKUtils.PawnWork.Changed".LocalizeKeyed(builder.ToString()));
+                TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.PawnWork.Changed".LocalizeKeyed(builder.ToString())}");
 
                 return;
             }
@@ -75,7 +76,7 @@ public class PawnWork : CommandBase
             return;
         }
 
-        twitchMessage.Reply(summary.WithHeader("TKUtils.PawnWork.Header".Localize()));
+        TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {summary.WithHeader("TKUtils.PawnWork.Header".Localize())}");
     }
 
     private static IEnumerable<string> ProcessChangeRequests(Pawn pawn, IEnumerable<KeyValuePair<string, string?>> rawChanges)

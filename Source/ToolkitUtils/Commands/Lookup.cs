@@ -14,14 +14,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
 using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
+using System.Collections.Generic;
+using System.Linq;
+using ToolkitCore;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
 using TwitchToolkit.Incidents;
 using Verse;
 
@@ -69,9 +70,9 @@ public class Lookup : CommandBase
         { "mod", Category.Mod }
     };
 
-    private ITwitchMessage _msg;
+    private TwitchMessageWrapper? _msg;
 
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         _msg = twitchMessage;
         string[] segments = CommandFilter.Parse(twitchMessage.Message).Skip(1).ToArray();
@@ -93,9 +94,14 @@ public class Lookup : CommandBase
         {
             return;
         }
-
-        _msg.Reply("TKUtils.Lookup".LocalizeKeyed(query, results.Take(TkSettings.LookupLimit).SectionJoin()));
+        if (_msg != null)
+        {
+            TwitchWrapper.SendChatMessage($"@{_msg.Username} {"TKUtils.Lookup".LocalizeKeyed(query, results.Take(TkSettings.LookupLimit).SectionJoin())}");
+        }
+        return;
     }
+        // _msg.Reply("TKUtils.Lookup".LocalizeKeyed(query, results.Take(TkSettings.LookupLimit).SectionJoin()));
+       
 
     private void PerformAnimalLookup(string? query)
     {
