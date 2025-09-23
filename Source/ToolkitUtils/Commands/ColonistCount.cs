@@ -14,11 +14,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using System;
+using System.Collections.Generic;
+using ToolkitCore;
+using TwitchToolkit;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils.Commands;
@@ -26,14 +28,27 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class ColonistCount : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        List<Pawn> colonists = Find.ColonistBar?.GetColonistsInOrder();
+        try
+        {
+            List<Pawn> colonists = Find.ColonistBar?.GetColonistsInOrder();
+            string message;
 
-        twitchMessage.Reply(
-            colonists == null || colonists.Count <= 0
-                ? "TKUtils.ColonistCount.None".Localize()
-                : "TKUtils.ColonistCount.Any".LocalizeKeyed(colonists.Count.ToString("N0"))
-        );
+            if (colonists == null || colonists.Count <= 0)
+            {
+                message = "TKUtils.ColonistCount.None".Localize();
+            }
+            else
+            {
+                message = "TKUtils.ColonistCount.Any".LocalizeKeyed(colonists.Count.ToString("N0"));
+            }
+
+            TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {message}");
+        }
+        catch (Exception ex)
+        {
+            TkUtils.Logger.Error($"Error in ColonistCount command: {ex.Message}");
+        }
     }
 }
