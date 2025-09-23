@@ -14,12 +14,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
+using ToolkitCore;
+using TwitchLib.Client.Models;
+using TwitchToolkit;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils.Commands;
@@ -27,12 +29,13 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class Factions : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         List<string> factions = Current.Game.World.factionManager.AllFactionsVisibleInViewOrder.Where(f => !f.IsPlayer)
            .Select(f => ResponseHelper.JoinPair(f.GetCallLabel(), f.PlayerGoodwill.ToStringWithSign()))
            .ToList();
 
-        twitchMessage.Reply((factions.Count <= 0 ? "TKUtils.Factions.None".Localize() : factions.SectionJoin()).WithHeader("WorldFactionsTab".Localize()));
+        //twitchMessage.Reply((factions.Count <= 0 ? "TKUtils.Factions.None".Localize() : factions.SectionJoin()).WithHeader("WorldFactionsTab".Localize()));
+        TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {(factions.Count <= 0 ? "TKUtils.Factions.None".Localize() : factions.SectionJoin()).WithHeader("WorldFactionsTab".Localize())}");
     }
 }

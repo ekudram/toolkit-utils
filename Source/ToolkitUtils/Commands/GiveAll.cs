@@ -14,14 +14,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using SirRandoo.ToolkitUtils.Workers;
+using System.Collections.Generic;
+using System.Linq;
+using ToolkitCore;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 
 namespace SirRandoo.ToolkitUtils.Commands;
@@ -29,7 +30,7 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class GiveAll : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         var worker = ArgWorker.CreateInstance(CommandFilter.Parse(twitchMessage.Message).Skip(1));
 
@@ -53,6 +54,7 @@ public class GiveAll : CommandBase
             count++;
         }
 
-        twitchMessage.Reply("TKUtils.GiveAll".LocalizeKeyed(amount.ToString("N0"), count.ToString("N0")));
+        // twitchMessage.Reply("TKUtils.GiveAll".LocalizeKeyed(amount.ToString("N0"), count.ToString("N0")));
+        TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.GiveAll".LocalizeKeyed(amount.ToString("N0"), count.ToString("N0"))}");
     }
 }
