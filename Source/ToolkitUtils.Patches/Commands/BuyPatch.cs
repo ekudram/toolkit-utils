@@ -54,23 +54,29 @@ internal static class BuyPatch
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    private static bool Prefix(CommandDriver? __instance, ITwitchMessage twitchMessage)
+    private static bool Prefix(CommandDriver? __instance, TwitchMessageWrapper twitchMessage)
     {
+        TkUtils.Logger.Debug($"BuyPatch Prefix: {twitchMessage.Username} - {twitchMessage.Message}");
+
         if (__instance == null)
         {
+            TkUtils.Logger.Error("BuyPatch: CommandDriver instance is null!");
             return true;
         }
 
         if (!TkSettings.StoreState)
         {
+            TkUtils.Logger.Debug("BuyPatch: Store is disabled, skipping");
             return false;
         }
 
         Viewer viewer = Viewers.GetViewer(twitchMessage.Username);
-        ITwitchMessage message = twitchMessage;
+        TwitchMessageWrapper message = twitchMessage;
+
 
         if (!__instance.command.defName.Equals("Buy"))
         {
+            TkUtils.Logger.Debug("BuyPatch: Not a Buy command, checking for shortcut");
             message = twitchMessage.WithMessage($"!{CommandDefOf.Buy.command} {twitchMessage.Message.Substring(1)}");
         }
 
