@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using System.Linq;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using SirRandoo.ToolkitUtils.Workers;
+using System.Linq;
+using ToolkitCore;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using TwitchToolkit.Store;
 
@@ -29,7 +30,7 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class GiveCoins : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         var worker = ArgWorker.CreateInstance(CommandFilter.Parse(twitchMessage.Message).Skip(1));
 
@@ -40,6 +41,7 @@ public class GiveCoins : CommandBase
 
         viewer.GiveViewerCoins(amount);
         Store_Logger.LogGiveCoins(twitchMessage.Username, viewer.username, amount);
-        twitchMessage.Reply("TKUtils.GiveCoins.Done".LocalizeKeyed(amount.ToString("N0"), viewer.username, viewer.GetViewerCoins().ToString("N0")));
+        //twitchMessage.Reply("TKUtils.GiveCoins.Done".LocalizeKeyed(amount.ToString("N0"), viewer.username, viewer.GetViewerCoins().ToString("N0")));
+        TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.GiveCoins.Done".LocalizeKeyed(amount.ToString("N0"), viewer.username, viewer.GetViewerCoins().ToString("N0"))}");
     }
 }
