@@ -42,7 +42,7 @@ namespace SirRandoo.ToolkitUtils;
 [UsedImplicitly]
 public class CommandRouter : GameComponent
 {
-    private static Task _interfaceTask;
+    // private static Task? _interfaceTask; // Add nullable modifier
     public static readonly ConcurrentQueue<TwitchMessageWrapper> CommandQueue = new ConcurrentQueue<TwitchMessageWrapper>();
     public static readonly ConcurrentQueue<Action> MainThreadCommands = new ConcurrentQueue<Action>();
 
@@ -57,42 +57,35 @@ public class CommandRouter : GameComponent
     }
 
     /// <inheritdoc cref="GameComponent.GameComponentUpdate"/>
+    /// <inheritdoc cref="GameComponent.GameComponentUpdate"/>
     public override void GameComponentUpdate()
     {
         ProcessCommands();
 
-        if (!TkSettings.CommandRouter || _interfaceTask is { IsCompleted: false })
+        if (!TkSettings.CommandRouter)
         {
             return;
         }
 
-        if (_interfaceTask?.Exception != null)
-        {
-            foreach (Exception exception in _interfaceTask.Exception.Flatten().InnerExceptions)
-            {
-                TkUtils.HandleException("A message handler encountered an exception", exception, "ToolkitUtils - Command Router");
-            }
-
-            _interfaceTask = null;
-        }
-
+        // Remove all task checking code since we're not using tasks anymore
         ProcessCommandQueue();
     }
 
     private static void ProcessCommandQueue()
     {
         List<TwitchInterfaceBase> interfaces = null;
-        bool taskDone = _interfaceTask == null || _interfaceTask.IsCompleted;
 
-        while (taskDone && !CommandQueue.IsEmpty)
+        while (!CommandQueue.IsEmpty)
         {
-            if (!CommandQueue.TryDequeue(out TwitchMessageWrapper message))
+            if (!CommandQueue.TryDequeue(out TwitchMessageWrapper? message) || message == null)
             {
+                TkUtils.Logger.Warn("Failed to dequeue message from CommandQueue.");    
                 break;
             }
 
             if (string.IsNullOrEmpty(message.Username) || string.IsNullOrEmpty(message.Message))
             {
+                TkUtils.Logger.Warn("Dequeued message has null or empty Username or Message.");
                 continue;
             }
 
@@ -100,26 +93,33 @@ public class CommandRouter : GameComponent
 
             foreach (TwitchInterfaceBase @interface in interfaces)
             {
-                if (_interfaceTask == null)
+                if (@interface is TwitchToolkitInterfaceBase toolkitInterface)
                 {
-                    _interfaceTask = Task.Run(
-                        () =>
-                        {
-                            @interface.ParseMessage(message);
-                        }
-                    );
+                    // Execute directly on the main thread - RimWorld 1.6 safe
+                    try
+                    {
+                        LongEventHandler.QueueLongEvent(
+                            () => toolkitInterface.ParseMessage(message),
+                            "ProcessingTwitchCommand",
+                            doAsynchronously: true,
+                            exceptionHandler: null
+                        );
+                        // toolkitInterface.ParseMessage(message); <-- Use this line instead if you want to run it synchronously on the main thread
+                    }
+                    catch (Exception ex)
+                    {
+                        TkUtils.Logger.Error($"Error processing message from {message.Username}: {ex}");
+                    }
                 }
                 else
                 {
-                    _interfaceTask.ContinueWith(
-                        t =>
-                        {
-                            @interface.ParseMessage(message);
-                        }
-                    );
+                    TkUtils.Logger.Warn($"TwitchInterfaceBase component does not support TwitchMessageWrapper: {@interface.GetType().Name}");
                 }
             }
         }
+
+        // Clear the task reference since we're not using tasks anymore
+        //_interfaceTask = null;
     }
 
     private static void ProcessCommands()

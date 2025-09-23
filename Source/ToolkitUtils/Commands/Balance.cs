@@ -13,28 +13,39 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// File: Source/ToolkitUtils/Commands/Balance.cs
+// Project: ToolkitUtils
+// Usage: A command that displays the user's current coin and karma balance
 
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using TwitchToolkit.Utilities;
 using Verse;
-
+using ToolkitCore;
+using ToolkitCore.Utilities;
 namespace SirRandoo.ToolkitUtils.Commands;
 
 [UsedImplicitly]
 public class Balance : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        Viewer viewer = Viewers.GetViewer(twitchMessage.Username);
+        if (twitchMessage?.Username == null)
+        {
+            TkUtils.Logger.Warn("Balance command called with null message or username");
+            return;
+        }
 
+        Viewer viewer = Viewers.GetViewer(twitchMessage.Username);
         if (viewer == null)
         {
+            TkUtils.Logger.Warn($"Viewer not found for username: {twitchMessage.Username}");
             return;
         }
 
@@ -56,7 +67,6 @@ public class Balance : CommandBase
         if (ToolkitSettings.EarningCoins && TkSettings.ShowCoinRate)
         {
             int income = CalculateCoinAward(viewer);
-
             container.Add(
                 (income > 0 ? $"{ResponseHelper.IncomeGlyph} +{income:N0}" : $"{ResponseHelper.DebtGlyph} {income:N0}").AltText(
                     "TKUtils.Balance.Rate".LocalizeKeyed(CalculateCoinAward(viewer).ToString("N0"), ToolkitSettings.CoinInterval.ToString("N0"))
@@ -64,7 +74,14 @@ public class Balance : CommandBase
             );
         }
 
-        twitchMessage.Reply(container.GroupedJoin());
+        try
+        {
+            TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {container.GroupedJoin()}");
+        }
+        catch (Exception ex)
+        {
+            TkUtils.Logger.Error($"Failed to send balance message to {twitchMessage.Username}: {ex.Message}");
+        }
     }
 
     private static int CalculateCoinAward(Viewer viewer)
