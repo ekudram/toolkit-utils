@@ -33,14 +33,14 @@ public class PawnBody : CommandBase
 {
     public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
+        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn) || pawn == null)
         {
             //twitchMessage.Reply("TKUtils.NoPawn".Localize().WithHeader("HealthOverview".Localize()));
             TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.NoPawn".Localize().WithHeader("HealthOverview".Localize())}");
             return;
         }
 
-        twitchMessage.Reply(GetPawnBody(pawn!).WithHeader("HealthOverview".Localize()));
+        TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {GetPawnBody(pawn!).WithHeader("HealthOverview".Localize())}");
     }
 
     private static float GetListPriority([CanBeNull] BodyPartRecord record) => record == null ? 9999999f : (float)record.height * 10000 + record.coverageAbsWithChildren;
