@@ -24,15 +24,17 @@ using ToolkitCore.Utilities;
 using ToolkitUtils.UX;
 using ToolkitCore;
 using Verse;
+using TwitchToolkit;
 
 namespace SirRandoo.ToolkitUtils.Commands;
 
 [UsedImplicitly]
 public class PawnHealth : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
+        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn) || pawn == null)
         {
             twitchMessage.Reply("TKUtils.NoPawn".Localize().WithHeader("TabHealth".Localize()));
 

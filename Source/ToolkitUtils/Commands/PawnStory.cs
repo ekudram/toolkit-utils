@@ -32,7 +32,7 @@ public class PawnStory : CommandBase
 {
     public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn))
+        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn) || pawn == null)
         {
             TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.NoPawn".Localize().WithHeader("TabCharacter".Localize())}");
             return;

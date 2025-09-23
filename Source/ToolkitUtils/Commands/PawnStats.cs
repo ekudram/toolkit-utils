@@ -44,7 +44,7 @@ public class PawnStats : CommandBase
 
     public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn))
+        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn) || pawn == null)
         {
             //twitchMessage.Reply("TKUtils.NoPawn".Localize());
             TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.NoPawn".Localize()}");
