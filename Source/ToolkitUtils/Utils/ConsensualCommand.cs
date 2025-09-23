@@ -19,7 +19,6 @@ using System.Linq;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Workers;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
 using TwitchToolkit;
 using Verse;
 
@@ -29,7 +28,7 @@ public abstract class ConsensualCommand : CommandBase
 {
     private protected static readonly ConsentWorker ConsentWorker = new();
 
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         var worker = ArgWorker.CreateInstance(CommandFilter.Parse(twitchMessage.Message).Skip(1));
         string? argument = worker.GetNext();

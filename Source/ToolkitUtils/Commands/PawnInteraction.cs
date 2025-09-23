@@ -22,7 +22,7 @@ using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using SirRandoo.ToolkitUtils.Workers;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using UnityEngine;
 using Verse;
@@ -40,7 +40,7 @@ public class PawnInteraction : CommandBase
         { "DeepChat", new InteractionProxy { Interaction = InteractionDefOf.DeepTalk } }
     };
 
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         if (!InteractionIndex.TryGetValue(command.defName, out InteractionProxy interaction))
         {
@@ -51,7 +51,7 @@ public class PawnInteraction : CommandBase
 
         Viewer data = Viewers.GetViewer(twitchMessage.Username);
 
-        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
+        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn))
         {
             twitchMessage.Reply("TKUtils.NoPawn".Localize());
 

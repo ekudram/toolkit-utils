@@ -17,7 +17,7 @@
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils.Commands;
@@ -25,7 +25,7 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class Wealth : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         if (Current.Game?.CurrentMap == null)
         {

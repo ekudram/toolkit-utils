@@ -17,14 +17,14 @@
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
 
 namespace SirRandoo.ToolkitUtils.Commands;
 
 [UsedImplicitly]
 public class ShopToggle : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         TkSettings.StoreState = !TkSettings.StoreState;
 

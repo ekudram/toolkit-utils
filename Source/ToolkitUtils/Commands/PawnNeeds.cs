@@ -18,7 +18,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils.Commands;
@@ -26,9 +26,9 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class PawnNeeds : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
+        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn))
         {
             twitchMessage.Reply("TKUtils.NoPawn".Localize());
 

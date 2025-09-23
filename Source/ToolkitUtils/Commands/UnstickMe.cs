@@ -17,7 +17,7 @@
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
 using TwitchToolkit.Store;
 using Verse;
 
@@ -26,7 +26,7 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class UnstickMe : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         if (!Purchase_Handler.viewerNamesDoingVariableCommands.Contains(twitchMessage.Username))
         {

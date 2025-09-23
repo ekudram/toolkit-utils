@@ -22,7 +22,7 @@ using SirRandoo.ToolkitUtils.Models;
 using SirRandoo.ToolkitUtils.Utils;
 using SirRandoo.ToolkitUtils.Workers;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
 using TwitchToolkit.Incidents;
 using Verse;
 
@@ -41,7 +41,7 @@ public class PriceCheck : CommandBase
     private static bool AreTraitsDisabled => IncidentDefOf.AddTrait.cost <= 0 && IncidentDefOf.RemoveTrait.cost <= 0 && IncidentDefOf.ReplaceTrait.cost <= 0
         && IncidentDefOf.ClearTraits.cost <= 0 && IncidentDefOf.SetTraits.cost <= 0;
 
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         _invoker = twitchMessage.Username;
         string[] segments = CommandFilter.Parse(twitchMessage.Message).Skip(1).ToArray();

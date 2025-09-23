@@ -85,11 +85,11 @@ public class CoreAddonMenu : IAddonMenu
         {
             if (TwitchWrapper.Client == null || !TwitchWrapper.Client.IsConnected)
             {
-                TwitchWrapper.StartAsyncStatic();
+                TwitchWrapper.StartAsync();
                 return;
             }
             TwitchWrapper.Client.Disconnect();
-            TwitchWrapper.StartAsyncStatic();
+            TwitchWrapper.StartAsync();
         }
         catch (Exception e)
         {

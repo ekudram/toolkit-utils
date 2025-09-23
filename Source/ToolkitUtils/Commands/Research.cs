@@ -20,7 +20,7 @@ using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils.Commands;
@@ -28,7 +28,7 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class Research : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         string? query = CommandFilter.Parse(twitchMessage.Message).Skip(1).FirstOrDefault();
         ResearchProjectDef project;

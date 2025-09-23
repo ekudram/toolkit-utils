@@ -302,6 +302,6 @@ public class CoreSettingsWindow : ProxySettingsWindow
             TwitchWrapper.Client.Disconnect();
         }
 
-        TwitchWrapper.StartAsyncStatic();
+        TwitchWrapper.StartAsync();
     }
 }

@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
 using TwitchToolkit.Store;
 
 namespace SirRandoo.ToolkitUtils.Commands;
@@ -26,7 +26,7 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class Unstick : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         int stuck = Purchase_Handler.viewerNamesDoingVariableCommands.Count;
 

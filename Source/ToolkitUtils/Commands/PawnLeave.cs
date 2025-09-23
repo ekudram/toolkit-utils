@@ -19,7 +19,8 @@ using RimWorld;
 using RimWorld.Planet;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
+using TwitchToolkit;
 using TwitchToolkit.PawnQueue;
 using UnityEngine;
 using Verse;
@@ -29,7 +30,7 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class PawnLeave : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
         {
@@ -64,7 +65,7 @@ public class PawnLeave : CommandBase
         component.pawnHistory.Remove(twitchMessage.Username);
     }
 
-    private static void ForceLeave(ITwitchMessage twitchMessage, Pawn pawn)
+    private static void ForceLeave(TwitchMessageWrapper twitchMessage, Pawn pawn)
     {
         if (TkSettings.LeaveMethod.EqualsIgnoreCase("Thanos") && FilthMaker.TryMakeFilth(
             pawn.Position,

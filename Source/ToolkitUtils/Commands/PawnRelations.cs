@@ -21,7 +21,7 @@ using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
 using TwitchToolkit.PawnQueue;
 using UnityEngine;
 using Verse;
@@ -31,7 +31,7 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class PawnRelations : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
         {
@@ -73,7 +73,7 @@ public class PawnRelations : CommandBase
         ShowRelationshipOverview(twitchMessage, component, pawn);
     }
 
-    private static void ShowRelationshipOverview(ITwitchMessage twitchMessage, GameComponentPawns component, Pawn pawn)
+    private static void ShowRelationshipOverview(TwitchMessageWrapper twitchMessage, GameComponentPawns component, Pawn pawn)
     {
         List<string> container = component.pawnHistory.Where(p => p.Value != pawn)
            .Select(
