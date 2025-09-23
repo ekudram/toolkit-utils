@@ -102,8 +102,8 @@ internal static class CommandsHandlerPatch
         {
             segments = segments.Where(i => !i.EqualsIgnoreCase("--text")).ToList();
         }
-
-        LocateCommand(segments.ToArray())?.Execute(twitchMessage.Message("!" + CombineSegments(segments).Trim())!, text);
+        string commandText = "!" + CombineSegments(segments).Trim();
+        LocateCommand(segments.ToArray())?.Execute(twitchMessage, text);
 
         return false;
     }

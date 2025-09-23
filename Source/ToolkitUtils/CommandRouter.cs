@@ -21,14 +21,15 @@
  * 
  */
 
+using JetBrains.Annotations;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using ToolkitCore;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
+using TwitchToolkit;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils;
@@ -42,7 +43,7 @@ namespace SirRandoo.ToolkitUtils;
 public class CommandRouter : GameComponent
 {
     private static Task _interfaceTask;
-    public static readonly ConcurrentQueue<ITwitchMessage> CommandQueue = new ConcurrentQueue<ITwitchMessage>();
+    public static readonly ConcurrentQueue<TwitchMessageWrapper> CommandQueue = new ConcurrentQueue<TwitchMessageWrapper>();
     public static readonly ConcurrentQueue<Action> MainThreadCommands = new ConcurrentQueue<Action>();
 
     public CommandRouter(Game game)
@@ -85,7 +86,7 @@ public class CommandRouter : GameComponent
 
         while (taskDone && !CommandQueue.IsEmpty)
         {
-            if (!CommandQueue.TryDequeue(out ITwitchMessage message))
+            if (!CommandQueue.TryDequeue(out TwitchMessageWrapper message))
             {
                 break;
             }
