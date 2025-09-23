@@ -17,7 +17,8 @@
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using ToolkitCore;
+using TwitchToolkit;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils.Commands;
@@ -25,22 +26,23 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class PawnFix : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
+        // Make pawn nullable and check for null
+        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn) || pawn == null)
         {
-            twitchMessage.Reply("TKUtils.NoPawn".Localize());
-
+            TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.NoPawn".Localize()}");
             return;
         }
 
-        var name = pawn!.Name as NameTriple;
+        // Now we know pawn is not null, so we can safely use it
+        var name = pawn.Name as NameTriple;
 
         if (name?.Nick != twitchMessage.Username)
         {
             pawn.Name = new NameTriple(name?.First ?? "", twitchMessage.Username, name?.Last ?? "");
         }
 
-        twitchMessage.Reply("TKUtils.PawnFix".Localize());
+        TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.PawnFix".Localize()}");
     }
 }
