@@ -22,8 +22,9 @@ using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using ToolkitCore;
 using Verse;
+using TwitchToolkit;
 
 namespace SirRandoo.ToolkitUtils.Commands;
 
@@ -41,16 +42,20 @@ public class PawnStats : CommandBase
         "IncomingDamageFactor"
     };
 
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
+        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn))
         {
-            twitchMessage.Reply("TKUtils.NoPawn".Localize());
-
+            //twitchMessage.Reply("TKUtils.NoPawn".Localize());
+            TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.NoPawn".Localize()}");
             return;
         }
 
-        List<string> queries = CommandFilter.Parse(twitchMessage.Message).Skip(1).Select(PurchaseHelper.ToToolkit).ToList();
+        List<string> queries = CommandFilter.Parse(twitchMessage.Message)
+            .Skip(1)
+            .Select(PurchaseHelper.ToToolkit)
+            .OfType<string>()
+            .ToList();
 
         if (queries.Count <= 0)
         {

@@ -22,25 +22,24 @@ using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using SirRandoo.ToolkitUtils.Utils.ModComp;
 using ToolkitUtils.UX;
-using TwitchLib.Client.Models.Interfaces;
+using ToolkitCore;
 using UnityEngine;
 using Verse;
+using TwitchToolkit;
 
 namespace SirRandoo.ToolkitUtils.Commands;
 
 [UsedImplicitly]
 public class PawnGear : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
-        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn pawn))
+        if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn) || pawn == null)
         {
-            twitchMessage.Reply("TKUtils.NoPawn".Localize().WithHeader("TabGear".Localize()));
-
+            TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.NoPawn".Localize().WithHeader("TabGear".Localize())}");
             return;
         }
-
-        twitchMessage.Reply(GetPawnGear(pawn).WithHeader("TabGear".Localize()));
+        TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {GetPawnGear(pawn).WithHeader("TabGear".Localize())}");
     }
 
     private static float CalculateArmorRating(Pawn pawn, StatDef stat)
@@ -48,7 +47,7 @@ public class PawnGear : CommandBase
         var rating = 0f;
         float value = Mathf.Clamp01(pawn.GetStatValue(stat) / 2f);
         List<BodyPartRecord> parts = pawn.RaceProps.body.AllParts;
-        List<Apparel> apparel = pawn.apparel?.WornApparel;
+        List<Apparel> apparel = pawn.apparel.WornApparel;
 
         foreach (BodyPartRecord part in parts)
         {
@@ -106,7 +105,7 @@ public class PawnGear : CommandBase
 
     private static void GetWeaponData(Pawn pawn, ICollection<string> parts)
     {
-        List<Thing> sidearms = SimpleSidearms.GetSidearms(pawn)?.ToList();
+        List<Thing> sidearms = SimpleSidearms.GetSidearms(pawn).ToList();
         var weapons = new List<string>();
         List<ThingWithComps> equipment = pawn.equipment?.AllEquipmentListForReading ?? new List<ThingWithComps>();
         int equipmentCount = equipment.Count;

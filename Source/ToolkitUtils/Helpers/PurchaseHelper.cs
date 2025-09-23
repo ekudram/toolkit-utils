@@ -63,7 +63,7 @@ public static class PurchaseHelper
 
     public static bool Stackable(this ThingDef thing) => thing.stackLimit > 1;
 
-    public static string? ToToolkit(this string? t) => t.Replace(" ", "").ToLower();
+    public static string? ToToolkit(this string? t) => t?.Replace(" ", "").ToLower();
 
     public static int CalculateStorePrice(this ThingDef d) => Math.Max(1, Convert.ToInt32(d.BaseMarketValue * 10.0f / 6.0f));
 

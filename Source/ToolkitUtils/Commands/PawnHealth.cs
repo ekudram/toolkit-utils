@@ -22,7 +22,7 @@ using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using ToolkitCore.Utilities;
 using ToolkitUtils.UX;
-using TwitchLib.Client.Models.Interfaces;
+using ToolkitCore;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils.Commands;

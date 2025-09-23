@@ -21,20 +21,20 @@ using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using ToolkitUtils.UX;
-using TwitchLib.Client.Models.Interfaces;
+using ToolkitCore;
 using Verse;
+using TwitchToolkit;
 
 namespace SirRandoo.ToolkitUtils.Commands;
 
 [UsedImplicitly]
 public class PawnStory : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn))
         {
-            twitchMessage.Reply("TKUtils.NoPawn".Localize().WithHeader("TabCharacter".Localize()));
-
+            TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.NoPawn".Localize().WithHeader("TabCharacter".Localize())}");
             return;
         }
 

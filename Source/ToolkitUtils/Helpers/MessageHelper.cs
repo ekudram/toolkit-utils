@@ -18,15 +18,15 @@ using System;
 using System.Text;
 using ToolkitCore;
 using TwitchLib.Client.Models;
-using TwitchLib.Client.Models.Interfaces;
 using TwitchToolkit;
 using Verse;
+using TwitchMessageWrapper = TwitchToolkit.TwitchMessageWrapper;
 
 namespace SirRandoo.ToolkitUtils.Helpers;
 
 public static class MessageHelper
 {
-    public static void Reply(this ITwitchMessage m, string? message)
+    public static void Reply(this TwitchMessageWrapper m, string? message)
     {
         ReplyToUser(m.Username, message);
     }
@@ -55,80 +55,80 @@ public static class MessageHelper
         return TkSettings.Emojis ? emoji : alt;
     }
 
-    public static ITwitchMessage? WithMessage(this ITwitchMessage m, string message)
-    {
-        if (m.WhisperMessage is not null)
-        {
-            return new WhisperMessage(
-                m.WhisperMessage.Badges,
-                m.WhisperMessage.ColorHex,
-                m.WhisperMessage.Color,
-                m.WhisperMessage.Username,
-                m.WhisperMessage.DisplayName,
-                m.WhisperMessage.EmoteSet,
-                m.WhisperMessage.ThreadId,
-                m.WhisperMessage.MessageId,
-                m.WhisperMessage.UserId,
-                m.WhisperMessage.IsTurbo,
-                m.WhisperMessage.BotUsername,
-                message,
-                m.WhisperMessage.UserType
-            );
-        }
+    //public static TwitchMessageWrapper? WithMessage(this TwitchMessageWrapper m, string message)
+    //{
+    //    if (m.WhisperMessage is not null)
+    //    {
+    //        return new WhisperMessage(
+    //            m.WhisperMessage.Badges,
+    //            m.WhisperMessage.ColorHex,
+    //            m.WhisperMessage.Color,
+    //            m.WhisperMessage.Username,
+    //            m.WhisperMessage.DisplayName,
+    //            m.WhisperMessage.EmoteSet,
+    //            m.WhisperMessage.ThreadId,
+    //            m.WhisperMessage.MessageId,
+    //            m.WhisperMessage.UserId,
+    //            m.WhisperMessage.IsTurbo,
+    //            m.WhisperMessage.BotUsername,
+    //            message,
+    //            m.WhisperMessage.UserType
+    //        );
+    //    }
 
-        if (m.ChatMessage is not null)
-        {
-            return new ChatMessage(
-                m.ChatMessage.BotUsername,
-                m.ChatMessage.UserId,
-                m.ChatMessage.Username,
-                m.ChatMessage.DisplayName,
-                m.ChatMessage.ColorHex,
-                m.ChatMessage.Color,
-                m.ChatMessage.EmoteSet,
-                message,
-                m.ChatMessage.UserType,
-                m.ChatMessage.Channel,
-                m.ChatMessage.Id,
-                m.ChatMessage.IsSubscriber,
-                m.ChatMessage.SubscribedMonthCount,
-                m.ChatMessage.RoomId,
-                m.ChatMessage.IsTurbo,
-                m.ChatMessage.IsModerator,
-                m.ChatMessage.IsMe,
-                m.ChatMessage.IsBroadcaster,
-                m.ChatMessage.Noisy,
-                m.ChatMessage.RawIrcMessage,
-                m.ChatMessage.EmoteReplacedMessage,
-                m.ChatMessage.Badges,
-                m.ChatMessage.CheerBadge,
-                m.ChatMessage.Bits,
-                m.ChatMessage.BitsInDollars
-            );
-        }
+    //    if (m.ChatMessage is not null)
+    //    {
+    //        return new ChatMessage(
+    //            m.ChatMessage.BotUsername,
+    //            m.ChatMessage.UserId,
+    //            m.ChatMessage.Username,
+    //            m.ChatMessage.DisplayName,
+    //            m.ChatMessage.ColorHex,
+    //            m.ChatMessage.Color,
+    //            m.ChatMessage.EmoteSet,
+    //            message,
+    //            m.ChatMessage.UserType,
+    //            m.ChatMessage.Channel,
+    //            m.ChatMessage.Id,
+    //            m.ChatMessage.IsSubscriber,
+    //            m.ChatMessage.SubscribedMonthCount,
+    //            m.ChatMessage.RoomId,
+    //            m.ChatMessage.IsTurbo,
+    //            m.ChatMessage.IsModerator,
+    //            m.ChatMessage.IsMe,
+    //            m.ChatMessage.IsBroadcaster,
+    //            m.ChatMessage.Noisy,
+    //            m.ChatMessage.RawIrcMessage,
+    //            m.ChatMessage.EmoteReplacedMessage,
+    //            m.ChatMessage.Badges,
+    //            m.ChatMessage.CheerBadge,
+    //            m.ChatMessage.Bits,
+    //            m.ChatMessage.BitsInDollars
+    //        );
+    //    }
 
-        return null;
-    }
+    //    return null;
+    //}
 
-    public static bool HasBadges(this ITwitchMessage? message, params string[] badges)
-    {
-        if (message?.ChatMessage?.Badges.NullOrEmpty() == true)
-        {
-            return false;
-        }
+    //public static bool HasBadges(this TwitchMessageWrapper? message, params string[] badges)
+    //{
+    //    if (message?.ChatMessage?.Badges.NullOrEmpty() == true)
+    //    {
+    //        return false;
+    //    }
 
-        for (var index = 0; index < badges.Length; index++)
-        {
-            string badge = badges[index];
+    //    for (var index = 0; index < badges.Length; index++)
+    //    {
+    //        string badge = badges[index];
 
-            if (message!.ChatMessage!.Badges.Any(p => p.Key.Equals(badge, StringComparison.InvariantCultureIgnoreCase)))
-            {
-                return true;
-            }
-        }
+    //        if (message!.ChatMessage!.Badges.Any(p => p.Key.Equals(badge, StringComparison.InvariantCultureIgnoreCase)))
+    //        {
+    //            return true;
+    //        }
+    //    }
 
-        return false;
-    }
+    //    return false;
+    //}
 
     public static string Append(this string s, string text) => $"{s}{text}";
 

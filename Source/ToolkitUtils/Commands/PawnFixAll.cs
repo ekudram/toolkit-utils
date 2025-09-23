@@ -17,7 +17,7 @@
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models.Interfaces;
+using ToolkitCore;
 using TwitchToolkit;
 using Verse;
 
@@ -26,11 +26,11 @@ namespace SirRandoo.ToolkitUtils.Commands;
 [UsedImplicitly]
 public class PawnFixAll : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         foreach (Viewer viewer in Viewers.All)
         {
-            if (!PurchaseHelper.TryGetPawn(viewer.username, out Pawn pawn))
+            if (!PurchaseHelper.TryGetPawn(viewer.username, out Pawn? pawn) || pawn == null)
             {
                 continue;
             }
@@ -43,6 +43,6 @@ public class PawnFixAll : CommandBase
             }
         }
 
-        twitchMessage.Reply("TKUtils.FixAll".Localize());
+        TwitchWrapper.SendChatMessage($"@{twitchMessage.Username} {"TKUtils.FixAll".Localize()}");
     }
 }
