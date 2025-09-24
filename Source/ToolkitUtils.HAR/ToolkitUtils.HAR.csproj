@@ -4,12 +4,11 @@
         <CompatibilityFor>AlienRace</CompatibilityFor>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="AlienRace">
-            <HintPath>$(RimWorldWorkshopRoot)\839005762\1.5\Assemblies\AlienRace.dll</HintPath>
-            <Private>False</Private>
-        </Reference>
+        <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj" Private="false" ExcludeAssets="runtime" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj" Private="false" ExcludeAssets="runtime"/>
+      <Reference Include="AlienRace">
+        <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\294100\839005762\1.6\Assemblies\AlienRace.dll</HintPath>
+      </Reference>
     </ItemGroup>
 </Project>

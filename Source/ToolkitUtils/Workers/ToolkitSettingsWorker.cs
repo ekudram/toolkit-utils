@@ -732,8 +732,8 @@ public static class ToolkitSettingsWorker
         var tabRect = new Rect(gapRect.x, gapRect.y + gapRect.height, gapRect.width, Mathf.FloorToInt(Text.SmallFontHeight * 1.5f));
         int lineGapWidth = Mathf.FloorToInt(gapRect.width * 0.2f);
 
-        LabelDrawer.Draw(titleRect, Toolkit.Mod.Content.Name, new Color(1f, 0.27f, 0.92f), TextAnchor.MiddleCenter, GameFont.Medium);
-
+        LabelDrawer.Draw(titleRect, TwitchToolkit.Toolkit.Mod.Content.Name, new Color(1f, 0.27f, 0.92f), TextAnchor.MiddleCenter, GameFont.Medium);
+        
         Widgets.DrawLineHorizontal(gapRect.x + lineGapWidth, gapRect.y + Mathf.FloorToInt(gapRect.height * 0.35f), gapRect.width - lineGapWidth * 2f);
 
         GUI.BeginGroup(tabRect);

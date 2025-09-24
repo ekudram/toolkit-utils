@@ -9,8 +9,7 @@
             <Private>False</Private>
         </Reference>
         <Reference Include="AbilityUser">
-            <HintPath>$(RimWorldWorkshopRoot)\932008009\1.5\Assemblies\AbilityUser.dll</HintPath>
-            <Private>False</Private>
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\294100\3312959701\1.6\Assemblies\AbilityUser.dll</HintPath>
         </Reference>
         <Reference Include="TorannMagic">
             <HintPath>$(RimWorldWorkshopRoot)\1201382956\v1.4\Assemblies\TorannMagic.dll</HintPath>
@@ -18,6 +17,6 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj" Private="false" ExcludeAssets="runtime"/>
+        <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj" Private="false" ExcludeAssets="runtime" />
     </ItemGroup>
 </Project>
