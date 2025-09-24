@@ -20,7 +20,8 @@ using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
+using TwitchLib.Client.Models;
 using UnityEngine;
 using Verse;
 
@@ -28,7 +29,7 @@ namespace SirRandoo.ToolkitUtils.Ideology.Commands;
 
 public class SetFavoriteColor : CommandBase
 {
-    public override void RunCommand([NotNull] ITwitchMessage message)
+    public override void RunCommand([NotNull] TwitchMessageWrapper message)
     {
         string? code = CommandFilter.Parse(message.Message).Skip(1).FirstOrDefault();
 
@@ -44,7 +45,7 @@ public class SetFavoriteColor : CommandBase
             return;
         }
 
-        if (!PurchaseHelper.TryGetPawn(message.Username, out Pawn pawn))
+        if (!PurchaseHelper.TryGetPawn(message.Username, out Pawn? pawn))
         {
             MessageHelper.ReplyToUser(message.Username, "TKUtils.NoPawn".Localize());
 

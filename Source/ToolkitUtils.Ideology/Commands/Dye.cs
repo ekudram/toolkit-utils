@@ -21,7 +21,8 @@ using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchToolkit;
+using TwitchLib.Client.Models;
 using UnityEngine;
 using Verse;
 
@@ -31,9 +32,9 @@ namespace SirRandoo.ToolkitUtils.Ideology.Commands;
 public class Dye : CommandBase
 {
     private string? _invoker;
-    private Pawn _pawn;
+    private Pawn? _pawn;
 
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         _invoker = twitchMessage.Username;
 
