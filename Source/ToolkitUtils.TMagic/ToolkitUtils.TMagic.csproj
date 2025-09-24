@@ -3,11 +3,13 @@
         <TargetFramework>net48</TargetFramework>
         <CompatibilityFor>TMagic</CompatibilityFor>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <Deterministic>False</Deterministic>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+      <Deterministic>False</Deterministic>
+    </PropertyGroup>
     <ItemGroup>
-        <Reference Include="0JecsTools">
-            <HintPath>$(RimWorldWorkshopRoot)\932008009\1.5\Assemblies\0JecsTools.dll</HintPath>
-            <Private>False</Private>
-        </Reference>
         <Reference Include="AbilityUser">
           <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\294100\3312959701\1.6\Assemblies\AbilityUser.dll</HintPath>
         </Reference>

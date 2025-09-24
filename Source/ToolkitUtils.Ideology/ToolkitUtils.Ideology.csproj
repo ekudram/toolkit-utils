@@ -2,12 +2,18 @@
     <PropertyGroup>
         <CompatibilityFor>Ideology</CompatibilityFor>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <Deterministic>False</Deterministic>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+      <Deterministic>False</Deterministic>
+    </PropertyGroup>
     <ItemGroup>
         <Content Include="..\..\Compatibility\Ideology\Common\**\*.*">
             <Link>Common\%(RecursiveDir)%(FileName)%(Extension)</Link>
         </Content>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj" Private="false" ExcludeAssets="runtime"/>
+        <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj" Private="false" ExcludeAssets="runtime" />
     </ItemGroup>
 </Project>
