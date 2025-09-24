@@ -20,7 +20,7 @@ using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using TwitchToolkit.PawnQueue;
 using TwitchToolkit.Twitch;
@@ -54,7 +54,7 @@ internal static class ViewerUpdaterPatch
         return null;
     }
 
-    private static bool Prefix(ITwitchMessage? twitchMessage)
+    private static bool Prefix(TwitchMessageWrapper? twitchMessage)
     {
         if (twitchMessage?.ChatMessage == null)
         {

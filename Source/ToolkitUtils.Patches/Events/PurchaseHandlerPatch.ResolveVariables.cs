@@ -19,7 +19,7 @@ using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Models;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using TwitchToolkit.Incidents;
 using TwitchToolkit.Store;
@@ -31,7 +31,7 @@ internal static partial class PurchaseHandlerPatch
 {
     [HarmonyPrefix]
     [HarmonyPatch("ResolvePurchaseVariables")]
-    private static bool ResolvePurchaseVariablesPrefix(Viewer viewer, ITwitchMessage twitchMessage, StoreIncidentVariables incident, string formattedMessage)
+    private static bool ResolvePurchaseVariablesPrefix(Viewer viewer, TwitchMessageWrapper twitchMessage, StoreIncidentVariables incident, string formattedMessage)
     {
         if (incident.cost <= 0 && !string.Equals(incident.defName, "Item", StringComparison.Ordinal))
         {

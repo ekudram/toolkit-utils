@@ -13,9 +13,21 @@
         <Reference Include="AbilityUser">
           <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\294100\3312959701\1.6\Assemblies\AbilityUser.dll</HintPath>
         </Reference>
+        <Reference Include="ToolkitCore">
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\ToolkitCore\1.6\Assemblies\ToolkitCore.dll</HintPath>
+        </Reference>
         <Reference Include="TorannMagic">
             <HintPath>$(RimWorldWorkshopRoot)\1201382956\v1.4\Assemblies\TorannMagic.dll</HintPath>
             <Private>False</Private>
+        </Reference>
+        <Reference Include="TwitchLib.Client">
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\ToolkitCore\1.6\Assemblies\TwitchLib.Client.dll</HintPath>
+        </Reference>
+        <Reference Include="TwitchLib.Client.Models">
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\ToolkitCore\1.6\Assemblies\TwitchLib.Client.Models.dll</HintPath>
+        </Reference>
+        <Reference Include="TwitchToolkit">
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkit\v1.6\Assemblies\TwitchToolkit.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>

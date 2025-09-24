@@ -6,7 +6,9 @@ using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
 using ToolkitUtils.UX;
 using TorannMagic;
-using TwitchLib.Client.Models.Interfaces;
+using TorannMagic.TMDefs;
+using TwitchLib.Client.Models;
+using TwitchToolkit;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils.TMagic.Commands;
@@ -14,7 +16,7 @@ namespace SirRandoo.ToolkitUtils.TMagic.Commands;
 [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature, ImplicitUseTargetFlags.WithMembers)]
 public class PawnClass : CommandBase
 {
-    public override void RunCommand(ITwitchMessage twitchMessage)
+    public override void RunCommand(TwitchMessageWrapper twitchMessage)
     {
         if (!PurchaseHelper.TryGetPawn(twitchMessage.Username, out Pawn? pawn))
         {

@@ -21,6 +21,7 @@ using SirRandoo.ToolkitUtils.Utils;
 using ToolkitCore.Utilities;
 using TorannMagic;
 using TwitchLib.Client.Models;
+using TwitchToolkit;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils.TMagic.Commands;
@@ -28,7 +29,7 @@ namespace SirRandoo.ToolkitUtils.TMagic.Commands;
 [UsedImplicitly]
 public class PawnSkillLevel : CommandBase
 {
-    public override void RunCommand([NotNull] ITwitchMessage msg)
+    public override void RunCommand([NotNull] TwitchMessageWrapper msg)
     {
         if (!PurchaseHelper.TryGetPawn(msg.Username, out Pawn pawn))
         {

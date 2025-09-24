@@ -20,7 +20,7 @@ using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Models;
 using ToolkitCore;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using TwitchToolkit.Incidents;
 using TwitchToolkit.Store;
@@ -34,7 +34,7 @@ internal static partial class PurchaseHandlerPatch
     [HarmonyPatch("ResolvePurchaseSimple")]
     private static bool ResolvePurchaseSimplePrefix(
         Viewer viewer,
-        ITwitchMessage twitchMessage,
+        TwitchMessageWrapper twitchMessage,
         StoreIncidentSimple incident,
         string formattedMessage
     )

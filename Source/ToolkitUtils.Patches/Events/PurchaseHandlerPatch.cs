@@ -22,7 +22,7 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Workers;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models.Interfaces;
+using TwitchLib.Client.Models;
 using TwitchToolkit;
 using TwitchToolkit.Incidents;
 using TwitchToolkit.Store;
@@ -58,7 +58,7 @@ internal static partial class PurchaseHandlerPatch
 
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Purchase_Handler.ResolvePurchase))]
-    private static bool ResolvePurchasePrefix(Viewer viewer, ITwitchMessage twitchMessage)
+    private static bool ResolvePurchasePrefix(Viewer viewer, TwitchMessageWrapper twitchMessage)
     {
         if (Purchase_Handler.CheckIfViewerIsInVariableCommandList(viewer.username))
         {
@@ -106,10 +106,10 @@ internal static partial class PurchaseHandlerPatch
         return false;
     }
 
-    private static bool TryProcessIncident(Viewer viewer, ITwitchMessage twitchMessage, string query) =>
+    private static bool TryProcessIncident(Viewer viewer, TwitchMessageWrapper twitchMessage, string query) =>
         TryProcessSimpleIncident(viewer, twitchMessage, query) || TryProcessVariablesIncident(viewer, twitchMessage, query);
 
-    private static bool TryProcessVariablesIncident(Viewer viewer, ITwitchMessage twitchMessage, string query)
+    private static bool TryProcessVariablesIncident(Viewer viewer, TwitchMessageWrapper twitchMessage, string query)
     {
         if (!TryFindVariableIncident(query, out StoreIncidentVariables? incidentVariables))
         {
@@ -128,7 +128,7 @@ internal static partial class PurchaseHandlerPatch
         return true;
     }
 
-    private static bool TryProcessSimpleIncident(Viewer viewer, ITwitchMessage twitchMessage, string query)
+    private static bool TryProcessSimpleIncident(Viewer viewer, TwitchMessageWrapper twitchMessage, string query)
     {
         if (!TryFindSimpleIncident(query, out StoreIncidentSimple? incidentSimple))
         {
