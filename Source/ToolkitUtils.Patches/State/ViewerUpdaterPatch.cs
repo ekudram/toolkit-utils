@@ -56,7 +56,7 @@ internal static class ViewerUpdaterPatch
 
     private static bool Prefix(TwitchMessageWrapper? twitchMessage)
     {
-        if (twitchMessage?.ChatMessage == null)
+        if (twitchMessage?.Message == null)
         {
             return false;
         }
@@ -64,10 +64,10 @@ internal static class ViewerUpdaterPatch
         Viewer viewer = Viewers.GetViewer(twitchMessage.Username);
         var component = Current.Game.GetComponent<GameComponentPawns>();
 
-        ToolkitSettings.ViewerColorCodes[twitchMessage.Username.ToLowerInvariant()] = twitchMessage.ChatMessage.ColorHex;
+        ToolkitSettings.ViewerColorCodes[twitchMessage.Username.ToLowerInvariant()] = twitchMessage.ColorHex;
 
         if (TkSettings.HairColor && component.HasUserBeenNamed(twitchMessage.Username)
-            && ColorUtility.TryParseHtmlString(twitchMessage.ChatMessage.ColorHex, out Color hairColor))
+            && ColorUtility.TryParseHtmlString(twitchMessage.ColorHex, out Color hairColor))
         {
             Pawn pawn = component.PawnAssignedToUser(twitchMessage.Username);
 
