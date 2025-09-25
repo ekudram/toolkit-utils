@@ -19,10 +19,24 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+/*
+ * Copyright (c) 2025 CaptoLamia and contributors (Same license as original)
+ * 
+ * Key Fixes:
+ *  True async operations: DeserializeAsync now uses ReadToEndAsync() and SerializeAsync uses WriteAsync()
+ *  Consistent serializer selection: Added GetSerializer() method to handle the override logic consistently
+ *  Better stream handling: Proper encoding specification and buffer size optimization
+ *  
+ *  Resource management: Streams are properly configured to leave the underlying stream open when appropriate
+ *  Performance: Added ConfigureAwait(false) for better async performance
+ *  
+ *  The class now properly implements asynchronous operations while maintaining the original functionality and error handling.
+ */
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -51,7 +65,6 @@ public static class Json
         if (Serializer == null)
         {
             TkUtils.Logger.Warn("Minified json serializer wasn't properly created. Switching to 'indented' may resolve this issue.");
-
             MinifyOverride = true;
             MinificationOverridden = true;
         }
@@ -59,7 +72,6 @@ public static class Json
         if (PrettySerializer == null)
         {
             TkUtils.Logger.Warn("Indented json serializer wasn't properly created. Switching to 'indented' may resolve this issue.");
-
             MinifyOverride = false;
             MinificationOverridden = true;
         }
@@ -80,7 +92,6 @@ public static class Json
         catch (Exception e)
         {
             TkUtils.Logger.Error("Could not create indented json serializer :: Your settings will NOT be saved between sessions! Switching to 'minified' may help.", e);
-
             return null;
         }
     }
@@ -94,7 +105,6 @@ public static class Json
         catch (Exception e)
         {
             TkUtils.Logger.Error("Could not create minified json serializer :: Your settings will NOT be saved between sessions!", e);
-
             return null;
         }
     }
@@ -108,7 +118,6 @@ public static class Json
         catch (Exception e)
         {
             TkUtils.Logger.Error("Could not create dictionary contract resolver :: Command, event, and item settings may be lost between sessions.", e);
-
             return null;
         }
     }
@@ -130,25 +139,25 @@ public static class Json
             return default;
         }
 
-        using (var reader = new StreamReader(stream))
-        using (var jsonReader = new JsonTextReader(reader))
+        var serializer = GetSerializer(false);
+        if (serializer == null)
         {
-            return Serializer!.Deserialize<T>(jsonReader);
+            return default;
+        }
+
+        // Read the stream content asynchronously first
+        using (var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
+        {
+            string jsonContent = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+            // Use StringReader for actual deserialization
+            using (var stringReader = new StringReader(jsonContent))
+            using (var jsonReader = new JsonTextReader(stringReader))
+            {
+                return serializer.Deserialize<T>(jsonReader);
+            }
         }
     }
-
-    //public static async Task<T?> DeserializeAsync<T>(Stream stream) where T : class
-    //{
-    //    if (SerializationDisabled)
-    //    {
-    //        return default;
-    //    }
-
-    //    using (var reader = new StreamReader(stream))
-    //    {
-    //        return await Serializer!.DeserializeAsync(reader, typeof(T)) as T;
-    //    }
-    //}
 
     /// <summary>
     ///     Serializes data from <see cref="obj" /> into the associated <see cref="Stream" />.
@@ -164,49 +173,24 @@ public static class Json
             return;
         }
 
-        JsonSerializer? serializer = pretty ? PrettySerializer : Serializer;
-
-        if (MinificationOverridden)
-        {
-            serializer = MinifyOverride ? PrettySerializer : Serializer;
-        }
-
+        var serializer = GetSerializer(pretty);
         if (serializer == null)
         {
             return;
         }
 
-        using (var writer = new StreamWriter(stream))
-        using (var jsonWriter = new JsonTextWriter(writer))
+        // Serialize to string first, then write asynchronously
+        var stringBuilder = new StringBuilder();
+        using (var stringWriter = new StringWriter(stringBuilder))
+        using (var jsonWriter = new JsonTextWriter(stringWriter))
         {
             serializer.Serialize(jsonWriter, obj);
-            await writer.FlushAsync(); // Ensure all data is written to the stream
         }
+
+        var jsonBytes = Encoding.UTF8.GetBytes(stringBuilder.ToString());
+        await stream.WriteAsync(jsonBytes, 0, jsonBytes.Length).ConfigureAwait(false);
+        await stream.FlushAsync().ConfigureAwait(false);
     }
-    //public static async Task SerializeAsync<T>(Stream stream, [DisallowNull] T obj, bool pretty)
-    //{
-    //    if (SerializationDisabled)
-    //    {
-    //        return;
-    //    }
-
-    //    JsonSerializer? serializer = pretty ? PrettySerializer : Serializer;
-
-    //    if (MinificationOverridden)
-    //    {
-    //        serializer = MinifyOverride ? PrettySerializer : Serializer;
-    //    }
-
-    //    if (serializer == null)
-    //    {
-    //        return;
-    //    }
-
-    //    using (var writer = new StreamWriter(stream))
-    //    {
-    //        await serializer.SerializeAsync(writer, obj); // <-- Error:  'JsonSerializer' does not contain a definition for 'SerializeAsync' and no accessible extension method 'SerializeAsync' accepting a first argument of type 'JsonSerializer' could be found (are you missing a using directive or an assembly reference?)
-    //    }
-    //}
 
     /// <summary>
     ///     Deserializes data from a <see cref="Stream" /> into the associated object <see cref="T" />.
@@ -224,21 +208,16 @@ public static class Json
             return default;
         }
 
-        JsonSerializer? serializer = Serializer;
-
-        if (MinificationOverridden)
-        {
-            serializer = MinifyOverride ? PrettySerializer : Serializer;
-        }
-
+        var serializer = GetSerializer(false);
         if (serializer == null)
         {
             return default;
         }
 
-        using (var reader = new StreamReader(stream))
+        using (var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
+        using (var jsonReader = new JsonTextReader(reader))
         {
-            return serializer.Deserialize(reader, typeof(T)) as T;
+            return serializer.Deserialize<T>(jsonReader);
         }
     }
 
@@ -256,6 +235,26 @@ public static class Json
             return;
         }
 
+        var serializer = GetSerializer(pretty);
+        if (serializer == null)
+        {
+            return;
+        }
+
+        using (var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true))
+        using (var jsonWriter = new JsonTextWriter(writer))
+        {
+            serializer.Serialize(jsonWriter, obj);
+        }
+    }
+
+    /// <summary>
+    ///     Gets the appropriate serializer based on formatting preferences and overrides.
+    /// </summary>
+    /// <param name="pretty">Whether pretty formatting is requested</param>
+    /// <returns>The appropriate JSON serializer instance</returns>
+    private static JsonSerializer? GetSerializer(bool pretty)
+    {
         JsonSerializer? serializer = pretty ? PrettySerializer : Serializer;
 
         if (MinificationOverridden)
@@ -263,15 +262,7 @@ public static class Json
             serializer = MinifyOverride ? PrettySerializer : Serializer;
         }
 
-        if (serializer == null)
-        {
-            return;
-        }
-
-        using (var writer = new StreamWriter(stream))
-        {
-            serializer.Serialize(writer, obj);
-        }
+        return serializer;
     }
 
     private sealed class DictionaryContractResolver : DefaultContractResolver
@@ -281,7 +272,6 @@ public static class Json
         {
             JsonDictionaryContract contract = base.CreateDictionaryContract(objectType);
             contract.DictionaryKeyResolver = propertyName => propertyName;
-
             return contract;
         }
     }
