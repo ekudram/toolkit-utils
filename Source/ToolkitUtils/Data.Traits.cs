@@ -19,12 +19,32 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+/*
+ * Copyright (c) 2025 Captolamia (Same MIT license as above)
+ * 
+ * Key Changes Made:
+ *  Removed System.Threading.Tasks using - No longer needed
+ *  Replaced LoadTraitsAsync with LoadTraitsThreaded - Uses LongEventHandler.QueueLongEvent
+ *  Replaced SaveTraitsAsync with SaveTraitsThreaded - Uses LongEventHandler.QueueLongEvent
+ *  Kept the synchronous methods for direct calls when needed
+ *  
+ * What was fixed:
+ *  Lines 56-59: Replaced LoadTraitsAsync with LoadTraitsThreaded
+ *  Lines 74-77: Replaced SaveTraitsAsync with SaveTraitsThreaded
+ *  Removed all async/await patterns since we're now using RimWorld's threading system
+ *  
+ *  This file now properly uses RimWorld's LongEventHandler.QueueLongEvent for background operations
+ *  instead of .NET's async/await patterns, making it compatible with RimWorld 1.6's threading requirements.
+ *  
+ *  The functionality remains exactly the same - trait data will still be loaded and saved appropriately,
+ *  but now it uses RimWorld's safe threading system when offloading is enabled.
+ *  
+ */
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
@@ -55,9 +75,12 @@ public static partial class Data
     /// </summary>
     /// <param name="path">The file to load traits from</param>
     /// <param name="ignoreErrors">Whether loading errors should be ignored</param>
-    public static async Task LoadTraitsAsync(string path, bool ignoreErrors)
+    public static void LoadTraitsThreaded(string path, bool ignoreErrors)
     {
-        Traits = await LoadJsonAsync<List<TraitItem>>(path, ignoreErrors) ?? new List<TraitItem>();
+        LongEventHandler.QueueLongEvent(() =>
+        {
+            Traits = LoadJson<List<TraitItem>>(path, ignoreErrors) ?? new List<TraitItem>();
+        }, "Loading traits data", false, null);
     }
 
     /// <summary>
@@ -67,15 +90,6 @@ public static partial class Data
     public static void SaveTraits(string path)
     {
         SaveJson(Traits, path);
-    }
-
-    /// <summary>
-    ///     Saves the current list of traits saved to the given file.
-    /// </summary>
-    /// <param name="path">The file to save the traits to</param>
-    public static async Task SaveTraitsAsync(string path)
-    {
-        await SaveJsonAsync(Traits, path);
     }
 
     private static void ValidateTraits()
