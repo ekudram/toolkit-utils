@@ -19,6 +19,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+//
+// Updated Code:
+// MIT License
+// 
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -48,12 +52,12 @@ public static partial class Data
     /// <summary>
     ///     Saves all commands indexed by the mod to its associated file.
     /// </summary>
-    public static async Task SaveCommandsAsync()
+    public static void SaveCommands()
     {
-        await SaveJsonAsync(Commands, Paths.CommandListFilePath);
+        SaveJson(Commands, Paths.CommandListFilePath);
     }
 
-    public static void LoadCommands(string filePath, bool ignoreErrors = false)
+     public static void LoadCommands(string filePath, bool ignoreErrors = false)
     {
         Commands = LoadJson<List<CommandItem>>(filePath, ignoreErrors) ?? new List<CommandItem>();
     }

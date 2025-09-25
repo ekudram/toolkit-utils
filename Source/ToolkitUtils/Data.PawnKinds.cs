@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Models;
@@ -54,9 +53,12 @@ public static partial class Data
     /// </summary>
     /// <param name="path">The file to load pawn kinds from</param>
     /// <param name="ignoreErrors">Whether loading errors should be ignored</param>
-    public static async Task LoadPawnKindsAsync(string path, bool ignoreErrors)
+    public static void LoadPawnKindsThreaded(string path, bool ignoreErrors)
     {
-        PawnKinds = await LoadJsonAsync<List<PawnKindItem>>(path, ignoreErrors) ?? new List<PawnKindItem>();
+        LongEventHandler.QueueLongEvent(() =>
+        {
+            PawnKinds = LoadJson<List<PawnKindItem>>(path, ignoreErrors) ?? new List<PawnKindItem>();
+        }, "Loading pawn kinds data", false, null);
     }
 
     /// <summary>
@@ -67,7 +69,6 @@ public static partial class Data
     {
         SaveJson(PawnKinds, path);
     }
-
     private static void ValidatePawnKinds()
     {
         List<PawnKindDef> kindDefs = DefDatabase<PawnKindDef>.AllDefs.Where(k => k.RaceProps.Humanlike).ToList();
@@ -148,15 +149,6 @@ public static partial class Data
             existing.Enabled = partial.Enabled;
             existing.Data = partial.Data;
         }
-    }
-
-    /// <summary>
-    ///     Saves a list of pawns at the given file path.
-    /// </summary>
-    /// <param name="path">The file to save pawns to</param>
-    public static async Task SavePawnKindsAsync(string path)
-    {
-        await SaveJsonAsync(PawnKinds, path);
     }
 
     /// <summary>
