@@ -13,12 +13,26 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+/*
+ * 🎯 Key Changes:
+ *      Replaced Task.Run with LongEventHandler.QueueLongEvent - This properly handles long-running operations on the main thread
+ *      Used synchronous Json.Deserialize instead of async - Avoids async/await complications
+ *      Added proper progress dialog translation key - Shows "Indexing partials..." to the user
+ *      Keeps all GUI operations on the main thread - Prevents threading exceptions
+ *      
+ * 📋 Why This is Necessary:
+ *      RimWorld's GUI is single-threaded - All window operations must happen on the main thread
+ *      LongEventHandler is RimWorld's solution for long operations - it shows a progress dialog and prevents freezing
+ *      File I/O in moderation is acceptable on the main thread for GUI operations
+ *      
+ *      This approach ensures your window works correctly within RimWorld's threading model while still providing feedback to the user during file operations.
+ * 
+ */
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using RimWorld;
 using SirRandoo.ToolkitUtils.Interfaces;
 using SirRandoo.ToolkitUtils.Models;
@@ -295,30 +309,34 @@ public class PartialManager<T> : Window where T : class, IShopItemBase
         base.PostOpen();
         FetchTranslations();
 
-        Task.Run(
-            async () =>
+        // Run indexing on the main thread using LongEventHandler
+        LongEventHandler.QueueLongEvent(
+            () =>
             {
                 _isIndexing = true;
 
                 try
                 {
-                    _files = await IndexPartialFiles();
+                    _files = IndexPartialFilesSync(); // Synchronous version
                 }
                 catch (Exception e)
                 {
                     TkUtils.Logger.Error($"Could not index partials for {_filter.ToString()}", e);
-
                     _errored = true;
                 }
 
                 if (_files != null)
                 {
-                    _files.RemoveAll(i => i.PartialData.PartialType != _filter);
+                    _files.RemoveAll(i => i.PartialData?.PartialType != _filter); // Added null check
                     _fileCount = _files.Count;
                 }
 
                 _isIndexing = false;
-            }
+            },
+            "TKUtils.IndexingPartials", // Translation key for progress dialog
+            false, // show progress bar
+            null, // exception handler
+            true // run in background (within RimWorld's async system)
         );
     }
 
@@ -335,46 +353,45 @@ public class PartialManager<T> : Window where T : class, IShopItemBase
         _deletePartialTooltip = "TKUtils.PartialTooltips.DeletePartial".TranslateSimple();
     }
 
-    private static async Task<List<FileData<T>>> IndexPartialFiles()
+    /// <summary>
+    /// Synchronous version of file indexing for RimWorld's main thread
+    /// </summary>
+    private List<FileData<T>> IndexPartialFilesSync()
     {
         var container = new List<FileData<T>>();
 
-        foreach (string file in Directory.EnumerateFileSystemEntries(Paths.PartialPath, "*.json", SearchOption.TopDirectoryOnly))
+        foreach (string filePath in Directory.EnumerateFiles(Paths.PartialPath, "*.json", SearchOption.TopDirectoryOnly))
         {
-            string path = Path.Combine(Paths.PartialPath, file);
-
-            if (Directory.Exists(path))
+            try
             {
-                container.Add(new FileData<T> { Description = path, IsDirectory = true, Extension = "", Name = file });
-
-                continue;
-            }
-
-            using (FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                var data = new FileData<T> { Description = path, IsFile = true, Extension = Path.GetExtension(file), Name = Path.GetFileNameWithoutExtension(file) };
-
-                try
+                // Use synchronous JSON deserialization
+                using (FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    var partial = await Json.DeserializeAsync<PartialData<T>>(stream);
+                    var partial = Json.Deserialize<PartialData<T>>(stream);
 
                     if (partial == null)
                     {
-                        TkUtils.Logger.Error(@$"Could not deserialize partial at ""{path}""; is it malformed?");
-
+                        TkUtils.Logger.Error(@$"Could not deserialize partial at ""{filePath}""; is it malformed?");
                         continue;
                     }
 
-                    data.IsPartial = true;
-                    data.Description = partial.Description;
-                    data.PartialData = partial;
-                }
-                catch (Exception e)
-                {
-                    TkUtils.Logger.Error("Could not deserialize partial", e);
-                }
+                    // Create FileData - Path is computed automatically from Name and Extension
+                    var data = new FileData<T>
+                    {
+                        Name = System.IO.Path.GetFileNameWithoutExtension(filePath),
+                        Extension = "json", // Explicitly set since we're filtering for .json files
+                        Description = partial.Description ?? filePath,
+                        IsFile = true,
+                        IsPartial = true,
+                        PartialData = partial
+                    };
 
-                container.Add(data);
+                    container.Add(data);
+                }
+            }
+            catch (Exception e)
+            {
+                TkUtils.Logger.Error("Could not deserialize partial", e);
             }
         }
 
