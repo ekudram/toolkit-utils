@@ -13,6 +13,22 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+/*
+ * Copyright (C) 2025 CapotLamia and contributors. (Same license as above.)
+ * 
+ * 📋 Key Changes:
+ *  Removed Task.Run - No more background threading
+ *  Used LongEventHandler.QueueLongEvent for the "offload" case
+ *  Used synchronous save methods (SaveTraits instead of SaveTraitsAsync)
+ *  Added base.PreClose() call - Important for proper window lifecycle
+ *  Added progress dialog - Shows "Saving traits..." to user during save
+ *  
+ * 🎯 Why This is Better:
+ *  Thread safety: All file operations happen on the main RimWorld thread
+ *  Predictable timing: Save operations complete before window fully closes
+ *  User feedback: Progress dialog shows during long save operations
+ *  Cleaner code: No need for ConfigureAwait(false) or async complexity
+ */
 
 using System;
 using System.Linq;
@@ -224,42 +240,44 @@ public class TraitConfigDialog : Window
     /// <inheritdoc cref="Window.PreClose" />
     public override void PreClose()
     {
+        base.PreClose(); // Always call base method first
+
         if (TkSettings.Offload)
         {
-            Task.Run(
-                    async () =>
+            // Use LongEventHandler for background saving on main thread
+            LongEventHandler.QueueLongEvent(
+                () =>
+                {
+                    switch (TkSettings.DumpStyle)
                     {
-                        switch (TkSettings.DumpStyle)
-                        {
-                            case "MultiFile":
-                                await Data.SaveTraitsAsync(Paths.TraitFilePath);
-
-                                return;
-                            case "SingleFile":
-                                await Data.SaveLegacyShopAsync(Paths.LegacyShopDumpFilePath);
-
-                                return;
-                        }
+                        case "MultiFile":
+                            Data.SaveTraits(Paths.TraitFilePath); // Use synchronous version
+                            break;
+                        case "SingleFile":
+                            Data.SaveLegacyShop(Paths.LegacyShopDumpFilePath); // Use synchronous version
+                            break;
                     }
-                )
-               .ConfigureAwait(false);
+                },
+                "TKUtils.SavingTraits", // Translation key for progress dialog
+                false, // show progress bar
+                null, // exception handler
+                true // run in background
+            );
         }
         else
         {
+            // Synchronous saving on main thread
             switch (TkSettings.DumpStyle)
             {
                 case "MultiFile":
                     Data.SaveTraits(Paths.TraitFilePath);
-
-                    return;
+                    break;
                 case "SingleFile":
                     Data.SaveLegacyShop(Paths.LegacyShopDumpFilePath);
-
-                    return;
+                    break;
             }
         }
     }
-
     /// <inheritdoc cref="Window.Notify_ResolutionChanged" />
     public override void Notify_ResolutionChanged()
     {
