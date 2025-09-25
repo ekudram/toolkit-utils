@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
 using TwitchToolkit.Incidents;
@@ -83,12 +82,7 @@ internal static class StoreIncidentEditorPatch
     {
         if (TkSettings.Offload)
         {
-            Task.Run(
-                async () =>
-                {
-                    await Data.SaveEventDataAsync(Paths.EventDataFilePath);
-                }
-            );
+            Data.SaveEventDataThreaded(Paths.EventDataFilePath);
         }
         else
         {

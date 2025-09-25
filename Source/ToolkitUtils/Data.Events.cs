@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Models;
@@ -49,15 +48,6 @@ public static partial class Data
     public static void SaveEventData(string path)
     {
         SaveJson(Events.ToDictionary(e => e.Name, e => e.EventData), path);
-    }
-
-    /// <summary>
-    ///     Saves event data to the given file.
-    /// </summary>
-    /// <param name="path">The file to save event data to</param>
-    public static async Task SaveEventDataAsync(string path)
-    {
-        await SaveJsonAsync(Events.ToDictionary(e => e.Name, e => e.EventData), path);
     }
 
     private static void ValidateEventList()
