@@ -13,6 +13,18 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+//Key Changes Made:
+//  Removed System.Threading.Tasks using -No longer needed
+//  Fixed ExecuteSaveOperations method - Replaced async method calls with synchronous ones:
+//  Data.SaveLegacyShopAsync() → Data.SaveLegacyShop()
+//  Data.SaveTraitsAsync() → Data.SaveTraits()
+//  Data.SavePawnKindsAsync() → Data.SavePawnKinds()
+//  Data.SaveItemDataAsync() → Data.SaveItemData()
+//  Data.SaveEventDataAsync() → Data.SaveEventData()
+//  Fixed partial save methods - Replaced Task.Run() with LongEventHandler.QueueLongEvent:
+//  SaveItemPartial, SaveEventPartial, SaveTraitPartial, SavePawnPartial now use RimWorld's threading system
+//  Removed .GetAwaiter().GetResult() calls - No longer needed since we're using synchronous methods
 
 using RimWorld;
 using SirRandoo.ToolkitUtils.Models;
@@ -20,7 +32,6 @@ using SirRandoo.ToolkitUtils.Workers;
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using ToolkitUtils.UX;
 using TwitchToolkit.Store;
 using UnityEngine;
@@ -273,15 +284,15 @@ public class Editor : Window
             switch (TkSettings.DumpStyle)
             {
                 case "SingleFile":
-                    Data.SaveLegacyShopAsync(Paths.LegacyShopDumpFilePath).GetAwaiter().GetResult();
+                    Data.SaveLegacyShop(Paths.LegacyShopDumpFilePath);
                     break;
                 case "MultiFile":
-                    Data.SaveTraitsAsync(Paths.TraitFilePath).GetAwaiter().GetResult();
-                    Data.SavePawnKindsAsync(Paths.PawnKindFilePath).GetAwaiter().GetResult();
+                    Data.SaveTraits(Paths.TraitFilePath);
+                    Data.SavePawnKinds(Paths.PawnKindFilePath);
                     break;
                 default:
-                    Data.SaveItemDataAsync(Paths.ItemDataFilePath).GetAwaiter().GetResult();
-                    Data.SaveEventDataAsync(Paths.EventDataFilePath).GetAwaiter().GetResult();
+                    Data.SaveItemData(Paths.ItemDataFilePath);
+                    Data.SaveEventData(Paths.EventDataFilePath);
                     break;
             }
         }
@@ -313,10 +324,10 @@ public class Editor : Window
 
     private void SaveItemPartial(PartialManager<ItemPartial>.PartialUgc data)
     {
-        Task.Run(
-            async () =>
+        LongEventHandler.QueueLongEvent(
+            () =>
             {
-                await Data.SaveJsonAsync(
+                Data.SaveJson(
                     new PartialData<ItemPartial>
                     {
                         Data = _itemWorker.Data.Where(i => !i.IsHidden)
@@ -328,16 +339,19 @@ public class Editor : Window
                     },
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
-            }
+            },
+            "Saving item partial data",
+            false,
+            null
         );
     }
 
     private void SaveEventPartial(PartialManager<EventPartial>.PartialUgc data)
     {
-        Task.Run(
-            async () =>
+        LongEventHandler.QueueLongEvent(
+            () =>
             {
-                await Data.SaveJsonAsync(
+                Data.SaveJson(
                     new PartialData<EventPartial>
                     {
                         Data = _eventWorker.Data.Where(i => !i.IsHidden).Select(i => i.Data).Select(EventPartial.FromIncident).ToList(),
@@ -346,39 +360,52 @@ public class Editor : Window
                     },
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
-            }
+            },
+            "Saving event partial data",
+            false,
+            null
         );
     }
 
     private void SaveTraitPartial(PartialManager<TraitItem>.PartialUgc data)
     {
-        Task.Run(
-            async () =>
+        LongEventHandler.QueueLongEvent(
+            () =>
             {
-                await Data.SaveJsonAsync(
+                Data.SaveJson(
                     new PartialData<TraitItem>
                     {
-                        Data = _traitWorker.Data.Where(i => !i.IsHidden).Select(i => i.Data).ToList(), PartialType = PartialType.Traits, Description = data.Description
+                        Data = _traitWorker.Data.Where(i => !i.IsHidden).Select(i => i.Data).ToList(),
+                        PartialType = PartialType.Traits,
+                        Description = data.Description
                     },
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
-            }
+            },
+            "Saving trait partial data",
+            false,
+            null
         );
     }
 
     private void SavePawnPartial(PartialManager<PawnKindItem>.PartialUgc data)
     {
-        Task.Run(
-            async () =>
+        LongEventHandler.QueueLongEvent(
+            () =>
             {
-                await Data.SaveJsonAsync(
+                Data.SaveJson(
                     new PartialData<PawnKindItem>
                     {
-                        Data = _pawnWorker.Data.Where(i => !i.IsHidden).Select(i => i.Data).ToList(), PartialType = PartialType.Pawns, Description = data.Description
+                        Data = _pawnWorker.Data.Where(i => !i.IsHidden).Select(i => i.Data).ToList(),
+                        PartialType = PartialType.Pawns,
+                        Description = data.Description
                     },
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
-            }
+            },
+            "Saving pawn partial data",
+            false,
+            null
         );
     }
 }

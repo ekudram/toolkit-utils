@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Models;
@@ -70,9 +69,12 @@ public static partial class Data
     ///     Loads item data from the given file path.
     /// </summary>
     /// <param name="path">The file to load item data from</param>
-    public static async Task LoadItemDataAsync(string path)
+    public static void LoadItemDataThreaded(string path)
     {
-        ItemData = await LoadJsonAsync<Dictionary<string, ItemData>>(path, true) ?? new Dictionary<string, ItemData>();
+        LongEventHandler.QueueLongEvent(() =>
+        {
+            ItemData = LoadJson<Dictionary<string, ItemData>>(path, true) ?? new Dictionary<string, ItemData>();
+        }, "Loading item data", false, null);
     }
 
     /// <summary>
@@ -82,15 +84,6 @@ public static partial class Data
     public static void SaveItemData(string path)
     {
         SaveJson(ItemData, path);
-    }
-
-    /// <summary>
-    ///     Saves item data to the given file.
-    /// </summary>
-    /// <param name="path">The file to save item data to</param>
-    public static async Task SaveItemDataAsync(string path)
-    {
-        await SaveJsonAsync(ItemData, path);
     }
 
     private static void ValidateItemData()

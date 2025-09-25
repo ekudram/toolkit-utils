@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using System.Linq;
-using System.Threading.Tasks;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Models;
 using SirRandoo.ToolkitUtils.Models.Tables;
@@ -183,23 +182,23 @@ public class PawnKindConfigDialog : Window
     {
         if (TkSettings.Offload)
         {
-            Task.Run(
-                    async () =>
+            LongEventHandler.QueueLongEvent(
+                () =>
+                {
+                    switch (TkSettings.DumpStyle)
                     {
-                        switch (TkSettings.DumpStyle)
-                        {
-                            case "MultiFile":
-                                await Data.SavePawnKindsAsync(Paths.PawnKindFilePath);
-
-                                return;
-                            case "SingleFile":
-                                await Data.SaveLegacyShopAsync(Paths.LegacyShopDumpFilePath);
-
-                                return;
-                        }
+                        case "MultiFile":
+                            Data.SavePawnKinds(Paths.PawnKindFilePath);
+                            break;
+                        case "SingleFile":
+                            Data.SaveLegacyShop(Paths.LegacyShopDumpFilePath);
+                            break;
                     }
-                )
-               .ConfigureAwait(false);
+                },
+                "Saving pawn kind data",
+                false,
+                null
+            );
         }
         else
         {
@@ -207,12 +206,10 @@ public class PawnKindConfigDialog : Window
             {
                 case "MultiFile":
                     Data.SavePawnKinds(Paths.PawnKindFilePath);
-
-                    return;
+                    break;
                 case "SingleFile":
                     Data.SaveLegacyShop(Paths.LegacyShopDumpFilePath);
-
-                    return;
+                    break;
             }
         }
     }
