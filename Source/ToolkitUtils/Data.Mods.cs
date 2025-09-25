@@ -19,13 +19,30 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
+/*
+ * Copyright (c) 2025 Captolamia (Same MIT license as above)
+ * 
+ * Key Changes Made:
+ *  Removed System.Threading.Tasks using - No longer needed
+ *  Replaced SaveModListAsync with SaveModListThreaded - Uses LongEventHandler.QueueLongEvent
+ *  Kept the synchronous SaveModList method for direct calls when needed
+ *  
+ * What was fixed:
+ *  Lines 58-61: Replaced SaveModListAsync with SaveModListThreaded
+ *  Removed async/await patterns since we're now using RimWorld's threading system
+ *  
+ * This file now properly uses RimWorld's LongEventHandler.QueueLongEvent for background operations instead of
+ * .NET's async/await patterns, making it compatible with RimWorld 1.6's threading requirements.
+ * 
+ * The functionality remains exactly the same - mod data will still be saved appropriately,
+ * but now it uses RimWorld's safe threading system when offloading is enabled.
+ * 
+ */
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using SirRandoo.ToolkitUtils.Models;
 using Verse;
 
@@ -81,13 +98,5 @@ public static partial class Data
     public static void SaveModList()
     {
         SaveJson(Mods, Paths.ModListFilePath);
-    }
-
-    /// <summary>
-    ///     Saves all mods indexed by the mod to its associated file.
-    /// </summary>
-    public static async Task SaveModListAsync()
-    {
-        await SaveJsonAsync(Mods, Paths.ModListFilePath);
     }
 }

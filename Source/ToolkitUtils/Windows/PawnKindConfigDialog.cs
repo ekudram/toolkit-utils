@@ -13,6 +13,25 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+/*
+ * Copyright (c) 2025 Captolamia (Same GNU license as above)
+ * 
+ * Key Changes Made:
+ *  Removed System.Threading.Tasks using - No longer needed
+ *  Replaced Task.Run() with LongEventHandler.QueueLongEvent in the PreClose method
+ *  Updated the async method calls to use synchronous versions:
+ *      Data.SavePawnKindsAsync() → Data.SavePawnKinds()
+ *      Data.SaveLegacyShopAsync() → Data.SaveLegacyShop()
+ *  Removed .ConfigureAwait(false) - No longer needed
+ *  
+ *  What was fixed:
+ *      Lines 150-164: Replaced the Task.Run() block with LongEventHandler.QueueLongEvent
+ *      Updated method calls to use the synchronous versions we created earlier
+ *      Added proper task description - "Saving pawn kind data"
+ *      
+ *  The dialog now properly uses RimWorld's threading system for background saving operations when TkSettings.Offload is enabled. When offload is disabled, it uses the synchronous methods directly.
+ *  This change ensures compatibility with RimWorld 1.6's threading requirements while maintaining the same functionality.
+ */
 
 using System.Linq;
 using SirRandoo.ToolkitUtils.Helpers;
