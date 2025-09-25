@@ -13,11 +13,13 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Code updated to remove Task.Run usage to fix crashes.
+// Now uses RimWorld's threading model.
 
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 using HarmonyLib;
 using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
@@ -306,7 +308,7 @@ public class CommandEditorDialog : Window_CommandEditor
 
         if (TkSettings.Offload)
         {
-            Task.Run(async () => await Data.SaveCommandsAsync()).ConfigureAwait(false);
+            Data.SaveCommandsThreaded();
         }
         else
         {

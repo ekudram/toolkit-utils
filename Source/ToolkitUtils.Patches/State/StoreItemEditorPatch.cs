@@ -13,12 +13,13 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Updated Code to us RimWorld's LongEventHandler instead of Task.Run
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
@@ -81,14 +82,12 @@ internal static class StoreItemEditorPatch
 
         if (TkSettings.Offload)
         {
-            Task.Run(
-                    async () =>
-                    {
-                        await Data.SaveJsonAsync(new ItemList { Items = items }, Paths.ToolkitItemFilePath);
-                        await Data.SaveItemDataAsync(Paths.ItemDataFilePath);
-                    }
-                )
-               .ConfigureAwait(false);
+            // Use RimWorld's LongEventHandler instead of Task.Run
+            LongEventHandler.QueueLongEvent(() =>
+            {
+                Data.SaveJson(new ItemList { Items = items }, Paths.ToolkitItemFilePath);
+                Data.SaveItemData(Paths.ItemDataFilePath);
+            }, "Saving store item data", false, null);
         }
         else
         {
