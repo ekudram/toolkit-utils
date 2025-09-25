@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /*
+ * Copyright (c) 2025 CaptoLamia and contributors (Same license as original)
+ * 
  * 🎯 Key Changes:
  *      Replaced Task.Run with LongEventHandler.QueueLongEvent - This properly handles long-running operations on the main thread
  *      Used synchronous Json.Deserialize instead of async - Avoids async/await complications
@@ -26,6 +28,9 @@
  *      File I/O in moderation is acceptable on the main thread for GUI operations
  *      
  *      This approach ensures your window works correctly within RimWorld's threading model while still providing feedback to the user during file operations.
+ *      
+ *      The FileData<T> class is designed to be smart about paths - you just give it the filename components, and it figures out the full path automatically.
+ *      This is actually a really clean design!
  * 
  */
 
