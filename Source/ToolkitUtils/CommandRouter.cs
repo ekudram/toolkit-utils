@@ -26,9 +26,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using ToolkitCore;
-using TwitchLib.Client.Models;
 using TwitchToolkit;
 using Verse;
 

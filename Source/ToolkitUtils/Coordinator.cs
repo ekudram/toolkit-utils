@@ -18,7 +18,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
@@ -103,11 +102,11 @@ public class Coordinator : GameComponent
                     return;
                 }
 
-            #if RW12
+#if RW12
                     MoteMaker.ThrowSmoke(thing.Position.ToVector3(), thing.Map, thing.Graphic.drawSize.magnitude);
-            #else
+#else
                 FleckMaker.ThrowSmoke(thing.Position.ToVector3(), thing.Map, thing.Graphic.drawSize.magnitude);
-            #endif
+#endif
             }
         );
 
@@ -207,7 +206,12 @@ public class Coordinator : GameComponent
             return;
         }
 
-        Task.Run(() => Viewers.AwardViewersCoins());
+        // Replace Task.Run with LongEventHandler
+        LongEventHandler.QueueLongEvent(() =>
+        {
+            Viewers.AwardViewersCoins();
+        }, "Awarding viewer coins", false, null);
+
         _rewardPeriodTracker = 0;
         TkUtils.Logger.Debug($"Awarded viewers coins @ {DateTime.Now:T}");
     }

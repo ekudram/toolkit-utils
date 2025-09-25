@@ -40,7 +40,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Windows;
 using ToolkitCore;
