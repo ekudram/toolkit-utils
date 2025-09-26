@@ -54,9 +54,9 @@ internal static class BuyPatch
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    private static bool Prefix(CommandDriver? __instance, TwitchMessageWrapper message)
+    private static bool Prefix(CommandDriver? __instance, TwitchMessageWrapper messageWrapper)
     {
-        TkUtils.Logger.Debug($"BuyPatch Prefix: {message.Username} - {message.Message}");
+        TkUtils.Logger.Debug($"BuyPatch Prefix: {messageWrapper.Username} - {messageWrapper.Message}");
 
         if (__instance == null)
         {
@@ -70,13 +70,13 @@ internal static class BuyPatch
             return false;
         }
 
-        Viewer viewer = Viewers.GetViewer(message.Username);
-        TwitchMessageWrapper processedMessage = message;
+        Viewer viewer = Viewers.GetViewer(messageWrapper.Username);
+        TwitchMessageWrapper processedMessage = messageWrapper;
 
         if (!__instance.command.defName.Equals("Buy"))
         {
             TkUtils.Logger.Debug("BuyPatch: Not a Buy command, checking for shortcut");
-            processedMessage = message.WithMessage($"!{CommandDefOf.Buy.command} {message.Message.Substring(1)}");
+            processedMessage = messageWrapper.WithMessage($"!{CommandDefOf.Buy.command} {messageWrapper.Message.Substring(1)}");
         }
 
         if (processedMessage!.Message.Split(' ').Length < 2)

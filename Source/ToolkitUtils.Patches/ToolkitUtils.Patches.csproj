@@ -34,15 +34,64 @@
     <ItemGroup>
       <Reference Include="ToolkitCore">
         <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\ToolkitCore\1.6\Assemblies\ToolkitCore.dll</HintPath>
+        <Private>False</Private>
       </Reference>
       <Reference Include="TwitchLib.Client">
         <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\ToolkitCore\1.6\Assemblies\TwitchLib.Client.dll</HintPath>
+        <Private>False</Private>
       </Reference>
       <Reference Include="TwitchLib.Client.Models">
         <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\ToolkitCore\1.6\Assemblies\TwitchLib.Client.Models.dll</HintPath>
+        <Private>False</Private>
       </Reference>
       <Reference Include="TwitchToolkit">
         <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkit\v1.6\Assemblies\TwitchToolkit.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Core">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Data">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Drawing">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.IO.Compression.FileSystem">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Numerics">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Runtime.Serialization">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Xml">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Xml.Linq">
+        <Private>False</Private>
       </Reference>
     </ItemGroup>
 </Project>

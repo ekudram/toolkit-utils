@@ -31,7 +31,7 @@ internal static partial class PurchaseHandlerPatch
 {
     [HarmonyPrefix]
     [HarmonyPatch("ResolvePurchaseVariables")]
-    private static bool ResolvePurchaseVariablesPrefix(Viewer viewer, TwitchMessageWrapper twitchMessage, StoreIncidentVariables incident, string formattedMessage)
+    private static bool ResolvePurchaseVariablesPrefix(Viewer viewer, TwitchMessageWrapper messageWrapper, StoreIncidentVariables incident, string formattedMessage)
     {
         if (incident.cost <= 0 && !string.Equals(incident.defName, "Item", StringComparison.Ordinal))
         {
@@ -70,7 +70,7 @@ internal static partial class PurchaseHandlerPatch
             return false;
         }
 
-        Store_Logger.LogPurchase(viewer.username, twitchMessage.Message);
+        Store_Logger.LogPurchase(viewer.username, messageWrapper.Message);
         UsageService.RecordUsage(Data.Events.Find(e => string.Equals(e.DefName, incident.defName)), viewer.username);
         Current.Game.GetComponent<Coordinator>()?.QueueIncident(new IncidentProxy { VariablesIncident = inc });
         Current.Game.GetComponent<Store_Component>()?.LogIncident(incident);

@@ -66,16 +66,16 @@ internal static class CommandsHandlerPatch
         return null;
     }
 
-    private static bool Prefix(TwitchMessageWrapper? message)
+    private static bool Prefix(TwitchMessageWrapper? messageWrapper)
     {
         TkUtils.Logger.Debug($"[TKUtils] CommandsHandlerPatch.Prefix started. TkSettings.Commands is {TkSettings.Commands}");
 
-        if (!TkSettings.Commands || message == null || string.IsNullOrEmpty(message.Message) || string.IsNullOrEmpty(message.Username))
+        if (!TkSettings.Commands || messageWrapper == null || string.IsNullOrEmpty(messageWrapper.Message) || string.IsNullOrEmpty(messageWrapper.Username))
         {
             return !TkSettings.Commands;
         }
 
-        Viewer viewer = Viewers.GetViewer(message.Username);
+        Viewer viewer = Viewers.GetViewer(messageWrapper.Username);
         viewer.last_seen = DateTime.Now;
 
         if (viewer.IsBanned)
@@ -83,7 +83,7 @@ internal static class CommandsHandlerPatch
             return false;
         }
 
-        string? sanitized = GetCommandString(message.Message);
+        string? sanitized = GetCommandString(messageWrapper.Message);
 
         if (sanitized is null)
         {
@@ -103,7 +103,7 @@ internal static class CommandsHandlerPatch
             segments = segments.Where(i => !i.EqualsIgnoreCase("--text")).ToList();
         }
         string commandText = "!" + CombineSegments(segments).Trim();
-        LocateCommand(segments.ToArray())?.Execute(message, text);
+        LocateCommand(segments.ToArray())?.Execute(messageWrapper, text);
 
         return false;
     }

@@ -34,7 +34,7 @@ internal static partial class PurchaseHandlerPatch
     [HarmonyPatch("ResolvePurchaseSimple")]
     private static bool ResolvePurchaseSimplePrefix(
         Viewer viewer,
-        TwitchMessageWrapper twitchMessage,
+        TwitchMessageWrapper messageWrapper,
         StoreIncidentSimple incident,
         string formattedMessage
     )
@@ -78,7 +78,7 @@ internal static partial class PurchaseHandlerPatch
         Current.Game.GetComponent<Coordinator>()?.QueueIncident(new IncidentProxy { SimpleIncident = inc });
         Current.Game.GetComponent<Store_Component>()?.LogIncident(incident);
 
-        Store_Logger.LogPurchase(viewer.username, twitchMessage.Message);
+        Store_Logger.LogPurchase(viewer.username, messageWrapper.Message);
         UsageService.RecordUsage(Data.Events.Find(e => string.Equals(e.DefName, incident.defName)), viewer.username);
 
         if (!ToolkitSettings.PurchaseConfirmations)

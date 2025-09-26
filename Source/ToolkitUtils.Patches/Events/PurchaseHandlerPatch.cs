@@ -58,14 +58,14 @@ internal static partial class PurchaseHandlerPatch
 
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Purchase_Handler.ResolvePurchase))]
-    private static bool ResolvePurchasePrefix(Viewer viewer, TwitchMessageWrapper twitchMessage)
+    private static bool ResolvePurchasePrefix(Viewer viewer, TwitchMessageWrapper messageWrapper)
     {
         if (Purchase_Handler.CheckIfViewerIsInVariableCommandList(viewer.username))
         {
             return false;
         }
 
-        List<string> segments = CommandFilter.Parse(twitchMessage.Message).ToList();
+        List<string> segments = CommandFilter.Parse(messageWrapper.Message).ToList();
         var worker = ArgWorker.CreateInstance(segments);
 
         if (!worker.HasNext())
@@ -75,7 +75,7 @@ internal static partial class PurchaseHandlerPatch
 
         string query = segments.Skip(1).FirstOrFallback("");
 
-        if (TryProcessIncident(viewer, twitchMessage, query))
+        if (TryProcessIncident(viewer, messageWrapper, query))
         {
             return false;
         }
@@ -96,7 +96,7 @@ internal static partial class PurchaseHandlerPatch
 
         try
         {
-            Purchase_Handler.ResolvePurchaseVariables(viewer, twitchMessage, StoreIncidentDefOf.Item, string.Join(" ", segments.ToArray()));
+            Purchase_Handler.ResolvePurchaseVariables(viewer, messageWrapper, StoreIncidentDefOf.Item, string.Join(" ", segments.ToArray()));
         }
         catch (Exception e)
         {
@@ -106,10 +106,10 @@ internal static partial class PurchaseHandlerPatch
         return false;
     }
 
-    private static bool TryProcessIncident(Viewer viewer, TwitchMessageWrapper twitchMessage, string query) =>
-        TryProcessSimpleIncident(viewer, twitchMessage, query) || TryProcessVariablesIncident(viewer, twitchMessage, query);
+    private static bool TryProcessIncident(Viewer viewer, TwitchMessageWrapper messageWrapper, string query) =>
+        TryProcessSimpleIncident(viewer, messageWrapper, query) || TryProcessVariablesIncident(viewer, messageWrapper, query);
 
-    private static bool TryProcessVariablesIncident(Viewer viewer, TwitchMessageWrapper twitchMessage, string query)
+    private static bool TryProcessVariablesIncident(Viewer viewer, TwitchMessageWrapper messageWrapper, string query)
     {
         if (!TryFindVariableIncident(query, out StoreIncidentVariables? incidentVariables))
         {
@@ -118,7 +118,7 @@ internal static partial class PurchaseHandlerPatch
 
         try
         {
-            Purchase_Handler.ResolvePurchaseVariables(viewer, twitchMessage, incidentVariables, twitchMessage.Message);
+            Purchase_Handler.ResolvePurchaseVariables(viewer, messageWrapper, incidentVariables, messageWrapper.Message);
         }
         catch (Exception e)
         {
@@ -128,7 +128,7 @@ internal static partial class PurchaseHandlerPatch
         return true;
     }
 
-    private static bool TryProcessSimpleIncident(Viewer viewer, TwitchMessageWrapper twitchMessage, string query)
+    private static bool TryProcessSimpleIncident(Viewer viewer, TwitchMessageWrapper messageWrapper, string query)
     {
         if (!TryFindSimpleIncident(query, out StoreIncidentSimple? incidentSimple))
         {
@@ -137,7 +137,7 @@ internal static partial class PurchaseHandlerPatch
 
         try
         {
-            Purchase_Handler.ResolvePurchaseSimple(viewer, twitchMessage, incidentSimple, twitchMessage.Message);
+            Purchase_Handler.ResolvePurchaseSimple(viewer, messageWrapper, incidentSimple, messageWrapper.Message);
         }
         catch (Exception e)
         {
