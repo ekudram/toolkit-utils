@@ -54,18 +54,14 @@ internal static class CommandsHandlerPatch
 
     private static Exception? Cleanup(MethodBase original, Exception? exception)
     {
-        TkUtils.Logger.Debug("[TKUtils] CommandsHandlerPatch.Cleanup called.");
-
         if (exception == null)
         {
+            TkUtils.Logger.Debug($"[TKUtils] Successfully patched {original.FullDescription()}");
             return null;
         }
-
         TkUtils.Logger.Error($"Could not patch {original.FullDescription()} -- Things will not work properly!", exception.InnerException ?? exception);
-
         return null;
     }
-
     private static bool Prefix(TwitchMessageWrapper? messageWrapper)
     {
         TkUtils.Logger.Debug($"[TKUtils] CommandsHandlerPatch.Prefix started. TkSettings.Commands is {TkSettings.Commands}");
@@ -107,7 +103,6 @@ internal static class CommandsHandlerPatch
 
         return false;
     }
-
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     private static Exception? Finalizer(Exception? __exception)
     {

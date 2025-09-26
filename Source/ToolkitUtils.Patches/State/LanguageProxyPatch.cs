@@ -52,6 +52,7 @@ internal static class LanguageProxyPatch
     {
         if (exception == null)
         {
+            TkUtils.Logger.Debug($"[TKUtils] Successfully patched {original.FullDescription()}");
             return null;
         }
 

@@ -43,6 +43,7 @@ internal static class WhisperPatch
     {
         if (exception == null)
         {
+            TkUtils.Logger.Debug($"[TKUtils] Successfully patched {original.FullDescription()}");
             return null;
         }
 

@@ -47,6 +47,7 @@ internal static class RefreshViewersPatch
     {
         if (exception == null)
         {
+            TkUtils.Logger.Debug($"[TKUtils] Successfully patched {original.FullDescription()}, This Is Obsolete!");
             return null;
         }
 

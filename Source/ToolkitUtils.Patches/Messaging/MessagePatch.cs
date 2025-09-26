@@ -66,6 +66,7 @@ internal static class MessagePatch
     {
         if (exception == null)
         {
+            TkUtils.Logger.Debug($"[TKUtils] Successfully patched {original.FullDescription()}");
             return null;
         }
 

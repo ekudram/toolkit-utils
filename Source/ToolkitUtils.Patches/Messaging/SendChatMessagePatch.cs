@@ -46,6 +46,7 @@ internal static class SendChatMessagePatch
     {
         if (exception == null)
         {
+            TkUtils.Logger.Debug($"[TKUtils] Successfully patched {original.FullDescription()}");
             return null;
         }
 

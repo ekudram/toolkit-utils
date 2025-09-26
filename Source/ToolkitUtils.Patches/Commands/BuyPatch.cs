@@ -45,6 +45,7 @@ internal static class BuyPatch
     {
         if (exception == null)
         {
+            TkUtils.Logger.Debug($"BuyPatch Cleanup: Successfully patched {original.FullDescription()}");
             return null;
         }
 

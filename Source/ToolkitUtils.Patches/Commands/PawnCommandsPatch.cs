@@ -42,6 +42,7 @@ internal static class PawnCommandsPatch
     {
         if (exception == null)
         {
+            TkUtils.Logger.Debug($"[TKUtils] Successfully patched {original.FullDescription()}");
             return null;
         }
 
