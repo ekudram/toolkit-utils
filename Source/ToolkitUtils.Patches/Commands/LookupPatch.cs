@@ -14,11 +14,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+using HarmonyLib;
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HarmonyLib;
-using JetBrains.Annotations;
+using TwitchToolkit;
 using TwitchToolkit.Store;
 
 namespace SirRandoo.ToolkitUtils.Patches;
@@ -33,7 +34,12 @@ internal static class LookupPatch
 {
     private static IEnumerable<MethodBase> TargetMethods()
     {
-        yield return AccessTools.Method(typeof(Store_Lookup), nameof(Store_Lookup.ParseMessage));
+        // Specify the exact method signature to avoid ambiguity
+        yield return AccessTools.Method(
+            typeof(Store_Lookup),
+            nameof(Store_Lookup.ParseMessage),
+            new Type[] { typeof(TwitchMessageWrapper) }
+        );
     }
 
     private static bool Prefix() => false;
@@ -45,7 +51,7 @@ internal static class LookupPatch
             return null;
         }
 
-        TkUtils.Logger.Error($"Could not patch {original.FullDescription()} -- Things will not work properly!", exception.InnerException ?? exception);
+        TkUtils.Logger.Error($"Could not patch {original?.FullDescription() ?? "null"} -- Things will not work properly!", exception.InnerException ?? exception);
 
         return null;
     }

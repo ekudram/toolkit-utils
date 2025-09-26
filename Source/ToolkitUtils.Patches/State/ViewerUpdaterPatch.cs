@@ -42,8 +42,8 @@ internal static class ViewerUpdaterPatch
 {
     private static IEnumerable<MethodBase> TargetMethods()
     {
-        // Target the new ParseMessage method that takes TwitchMessageWrapper
-        yield return AccessTools.Method(typeof(ViewerUpdater), nameof(ViewerUpdater.ParseMessage));
+        // Be more specific about the method signature to avoid ambiguity
+        yield return AccessTools.Method(typeof(ViewerUpdater), nameof(ViewerUpdater.ParseMessage), new[] { typeof(TwitchMessageWrapper) });
     }
 
     private static Exception? Cleanup(MethodBase original, Exception? exception)

@@ -14,11 +14,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+using HarmonyLib;
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HarmonyLib;
-using JetBrains.Annotations;
+using TwitchToolkit;
 using TwitchToolkit.PawnQueue;
 
 namespace SirRandoo.ToolkitUtils.Patches;
@@ -33,7 +34,7 @@ internal static class PawnCommandsPatch
 {
     private static IEnumerable<MethodBase> TargetMethods()
     {
-        yield return AccessTools.Method(typeof(PawnCommands), nameof(PawnCommands.ParseMessage));
+        yield return AccessTools.Method(typeof(PawnCommands), nameof(PawnCommands.ParseMessage), new[] { typeof(TwitchMessageWrapper) });
     }
 
     private static bool Prefix() => false;
