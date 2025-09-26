@@ -13,6 +13,9 @@
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+/*
+ * File: Source/ToolkitUtils.Patches/State/ViewerUpdaterPatch.cs
+ */
 
 using System;
 using System.Collections.Generic;
@@ -39,6 +42,7 @@ internal static class ViewerUpdaterPatch
 {
     private static IEnumerable<MethodBase> TargetMethods()
     {
+        // Target the new ParseMessage method that takes TwitchMessageWrapper
         yield return AccessTools.Method(typeof(ViewerUpdater), nameof(ViewerUpdater.ParseMessage));
     }
 
@@ -55,22 +59,24 @@ internal static class ViewerUpdaterPatch
         return null;
     }
 
-    private static bool Prefix(TwitchMessageWrapper? twitchMessage)
+    private static bool Prefix(TwitchMessageWrapper? messageWrapper)
     {
-        if (twitchMessage?.Message == null)
+        TkUtils.Logger.Debug($"[TKUtils] ViewerUpdaterPatch.Prefix called for {messageWrapper?.Username}");
+        if (messageWrapper?.Message == null)
         {
+            TkUtils.Logger.Debug("[TKUtils] ViewerUpdaterPatch.Prefix Message wrapper or message is null, skipping");
             return false;
         }
 
-        Viewer viewer = Viewers.GetViewer(twitchMessage.Username);
+        Viewer viewer = Viewers.GetViewer(messageWrapper.Username);
         var component = Current.Game.GetComponent<GameComponentPawns>();
 
-        ToolkitSettings.ViewerColorCodes[twitchMessage.Username.ToLowerInvariant()] = twitchMessage.ColorHex;
+        ToolkitSettings.ViewerColorCodes[messageWrapper.Username.ToLowerInvariant()] = messageWrapper.ColorHex;
 
-        if (TkSettings.HairColor && component.HasUserBeenNamed(twitchMessage.Username)
-            && ColorUtility.TryParseHtmlString(twitchMessage.ColorHex, out Color hairColor))
+        if (TkSettings.HairColor && component.HasUserBeenNamed(messageWrapper.Username)
+            && ColorUtility.TryParseHtmlString(messageWrapper.ColorHex, out Color hairColor))
         {
-            Pawn pawn = component.PawnAssignedToUser(twitchMessage.Username);
+            Pawn pawn = component.PawnAssignedToUser(messageWrapper.Username);
 
             if (pawn?.story != null)
             {
@@ -78,9 +84,12 @@ internal static class ViewerUpdaterPatch
             }
         }
 
-        viewer.mod = twitchMessage.HasBadges("moderator", "broadcaster", "global_mod", "staff");
-        viewer.subscriber = twitchMessage.HasBadges("subscriber", "founder");
-        viewer.vip = twitchMessage.HasBadges("vip");
+        viewer.mod = messageWrapper.HasBadges("moderator", "broadcaster", "global_mod", "staff");
+        viewer.subscriber = messageWrapper.HasBadges("subscriber", "founder");
+        viewer.vip = messageWrapper.HasBadges("vip");
+
+        TkUtils.Logger.Debug($"[TKUtils] Updated viewer badges for {messageWrapper.Username}: " +
+                     $"mod={viewer.mod}, sub={viewer.subscriber}, vip={viewer.vip}");
 
         if (!Data.RegisterViewer(viewer.username))
         {

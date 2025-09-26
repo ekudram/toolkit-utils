@@ -26,7 +26,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using ToolkitCore;
 using TwitchToolkit;
 using Verse;
 
@@ -71,13 +70,14 @@ public class CommandRouter : GameComponent
 
     private static void ProcessCommandQueue()
     {
-        List<TwitchInterfaceBase> interfaces = null;
+        List<TwitchToolkit.TwitchInterfaceBase>? interfaces = null;
 
         while (!CommandQueue.IsEmpty)
         {
-            if (!CommandQueue.TryDequeue(out TwitchMessageWrapper? message) || message == null)
+            // Change to non-nullable and handle the null check properly
+            if (!CommandQueue.TryDequeue(out TwitchMessageWrapper message) || message == null)
             {
-                TkUtils.Logger.Warn("Failed to dequeue message from CommandQueue.");    
+                TkUtils.Logger.Warn("Failed to dequeue message from CommandQueue.");
                 break;
             }
 
@@ -87,37 +87,26 @@ public class CommandRouter : GameComponent
                 continue;
             }
 
-            interfaces ??= Current.Game.components.OfType<TwitchInterfaceBase>().ToList();
+            interfaces ??= Current.Game.components.OfType<TwitchToolkit.TwitchInterfaceBase>().ToList();
 
-            foreach (TwitchInterfaceBase @interface in interfaces)
+            foreach (TwitchToolkit.TwitchInterfaceBase @interface in interfaces)
             {
-                if (@interface is TwitchToolkitInterfaceBase toolkitInterface)
+                // Remove the redundant type check - @interface is already the correct type
+                try
                 {
-                    // Execute directly on the main thread - RimWorld 1.6 safe
-                    try
-                    {
-                        LongEventHandler.QueueLongEvent(
-                            () => toolkitInterface.ParseMessage(message),
-                            "ProcessingTwitchCommand",
-                            doAsynchronously: true,
-                            exceptionHandler: null
-                        );
-                        // toolkitInterface.ParseMessage(message); <-- Use this line instead if you want to run it synchronously on the main thread
-                    }
-                    catch (Exception ex)
-                    {
-                        TkUtils.Logger.Error($"Error processing message from {message.Username}: {ex}");
-                    }
+                    LongEventHandler.QueueLongEvent(
+                        () => @interface.ParseMessage(message),
+                        "ProcessingTwitchCommand",
+                        doAsynchronously: true,
+                        exceptionHandler: null
+                    );
                 }
-                else
+                catch (Exception ex)
                 {
-                    TkUtils.Logger.Warn($"TwitchInterfaceBase component does not support TwitchMessageWrapper: {@interface.GetType().Name}");
+                    TkUtils.Logger.Error($"Error processing message from {message.Username}: {ex}");
                 }
             }
         }
-
-        // Clear the task reference since we're not using tasks anymore
-        //_interfaceTask = null;
     }
 
     private static void ProcessCommands()
