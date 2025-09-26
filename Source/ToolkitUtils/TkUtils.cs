@@ -29,6 +29,7 @@ namespace SirRandoo.ToolkitUtils;
 [UsedImplicitly]
 public class TkUtils : Mod
 {
+
     public TkUtils(ModContentPack content) : base(content)
     {
         Instance = this;

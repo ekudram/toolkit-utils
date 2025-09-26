@@ -31,6 +31,10 @@ namespace SirRandoo.ToolkitUtils;
 public class TkSettings : ModSettings
 {
     /// <summary>
+    /// Whether debug logging is enabled for troubleshooting purposes.
+    /// </summary>
+    public static bool EnableDebugLogging;
+    /// <summary>
     ///     When enabled, viewers that purchase items or events that have a
     ///     "neutral" karma type rating will not receive any karma for said
     ///     purchase.
@@ -451,6 +455,7 @@ public class TkSettings : ModSettings
         Scribe_Values.Look(ref GatewayPuff, "gatewayPuff", true);
         Scribe_Values.Look(ref EasterEggs, "easterEggs", true);
         Scribe_Values.Look(ref TransparentColors, "allowTransparentColors");
+        Scribe_Values.Look(ref EnableDebugLogging, "enableDebugLogging");
 
         Scribe_Collections.Look(ref WorkSettings, "workSettings", LookMode.Deep);
     }

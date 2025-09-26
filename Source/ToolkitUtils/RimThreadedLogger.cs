@@ -19,11 +19,29 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+/*
+ * Key Changes Made:
+ * Added caching fields:
+ * _toolkitCoreDebugEnabled: Caches the ToolkitCore setting value
+ * _toolkitCoreChecked: Tracks whether we've already checked the setting
+ * Added GetToolkitCoreDebugSetting() method:
+ * Uses reflection to access ToolkitCore's enableDebugLogging setting
+ * Caches the result for performance
+ * Includes proper error handling if ToolkitCore isn't available
+ * Updated Debug() method:
+ * Now checks both debug build status AND ToolkitCore's setting
+ * Maintains existing behavior for debug builds
+ * Adds user control via ToolkitCore's setting for release builds
+ * Behavior:
+ * Debug Builds: Debug messages always show (existing behavior)
+ * Release Builds: Debug messages show only when ToolkitCoreSettings.enableDebugLogging is true
+ * Fallback: If ToolkitCore isn't available, debug messages only show in debug builds
+ * Performance: Reflection call is cached, so it only happens once per session
+ */
 
 using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Threading;
 using UnityEngine;
 using Verse;
 
@@ -33,6 +51,8 @@ public class RimLogger(string name)
 {
     private bool _debugChecked;
     private bool _debugEnabled;
+    private static bool? _toolkitCoreDebugEnabled;
+    private static bool _toolkitCoreChecked;
 
     public string FormatMessage(string message) => $"{name} :: {message}";
 
@@ -76,7 +96,10 @@ public class RimLogger(string name)
             _debugChecked = true;
         }
 
-        if (_debugEnabled)
+        // Show debug messages if: 
+        // 1. It's a debug build OR 
+        // 2. ToolkitCore's debug logging is enabled
+        if (_debugEnabled || GetToolkitCoreDebugSetting())
         {
             LogInternal(FormatMessage("DEBUG", message, ColorUtility.ToHtmlStringRGB(ColorLibrary.LightPink)));
         }
@@ -85,6 +108,40 @@ public class RimLogger(string name)
     protected virtual void LogInternal(string message)
     {
         Verse.Log.Message(message);
+    }
+
+    private static bool GetToolkitCoreDebugSetting()
+    {
+        if (_toolkitCoreChecked)
+        {
+            return _toolkitCoreDebugEnabled ?? false;
+        }
+
+        _toolkitCoreChecked = true;
+
+        try
+        {
+            // Use reflection to access ToolkitCore's setting
+            Type toolkitCoreSettingsType = Type.GetType("ToolkitCore.ToolkitCoreSettings, ToolkitCore");
+            if (toolkitCoreSettingsType != null)
+            {
+                FieldInfo debugField = toolkitCoreSettingsType.GetField("enableDebugLogging",
+                    BindingFlags.Public | BindingFlags.Static);
+                if (debugField != null)
+                {
+                    _toolkitCoreDebugEnabled = (bool)(debugField.GetValue(null) ?? false);
+                    return _toolkitCoreDebugEnabled.Value;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // If we can't access ToolkitCore's setting, fall back to false
+            Verse.Log.Warning($"Failed to access ToolkitCore debug setting: {ex.Message}");
+        }
+
+        _toolkitCoreDebugEnabled = false;
+        return false;
     }
 }
 
