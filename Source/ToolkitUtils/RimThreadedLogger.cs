@@ -21,27 +21,16 @@
 // SOFTWARE.
 /*
  * Key Changes Made:
- * Added caching fields:
- * _toolkitCoreDebugEnabled: Caches the ToolkitCore setting value
- * _toolkitCoreChecked: Tracks whether we've already checked the setting
- * Added GetToolkitCoreDebugSetting() method:
- * Uses reflection to access ToolkitCore's enableDebugLogging setting
- * Caches the result for performance
- * Includes proper error handling if ToolkitCore isn't available
- * Updated Debug() method:
- * Now checks both debug build status AND ToolkitCore's setting
- * Maintains existing behavior for debug builds
- * Adds user control via ToolkitCore's setting for release builds
- * Behavior:
- * Debug Builds: Debug messages always show (existing behavior)
- * Release Builds: Debug messages show only when ToolkitCoreSettings.enableDebugLogging is true
- * Fallback: If ToolkitCore isn't available, debug messages only show in debug builds
- * Performance: Reflection call is cached, so it only happens once per session
+ * - Added ToolkitUtils prefix similar to ToolkitCore and TwitchToolkit
+ * - Removed reflection and directly access ToolkitCoreSettings.enableDebugLogging
+ * - Simplified debug logic since we can directly check the setting
+ * - Maintained debug build detection for development
  */
 
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using ToolkitCore;
 using UnityEngine;
 using Verse;
 
@@ -51,14 +40,13 @@ public class RimLogger(string name)
 {
     private bool _debugChecked;
     private bool _debugEnabled;
-    private static bool? _toolkitCoreDebugEnabled;
-    private static bool _toolkitCoreChecked;
+    private const string Prefix = "<color=#FFA500>[ToolkitUtils]</color>"; // Orange color for ToolkitUtils
 
-    public string FormatMessage(string message) => $"{name} :: {message}";
+    public string FormatMessage(string message) => $"{Prefix} {name} :: {message}";
 
-    public string FormatMessage(string level, string message) => $"{level.ToUpperInvariant()} {name} :: {message}";
+    public string FormatMessage(string level, string message) => $"{Prefix} {level.ToUpperInvariant()} {name} :: {message}";
 
-    public string FormatMessage(string level, string message, string color) => $@"<color=""#{color.TrimStart('#')}"">{FormatMessage(level, message)}</color>";
+    public string FormatMessage(string level, string message, string color) => $@"{Prefix} <color=""#{color.TrimStart('#')}"">{level.ToUpperInvariant()} {name} :: {message}</color>";
 
     public virtual void Log(string message)
     {
@@ -72,12 +60,12 @@ public class RimLogger(string name)
 
     public virtual void Warn(string message)
     {
-        LogInternal(FormatMessage("WARN", message, "#FF6B00"));
+        LogInternal(FormatMessage("WARN", message, "FF6B00")); // Orange color for warnings
     }
 
     public virtual void Error(string message)
     {
-        LogInternal(FormatMessage("ERR", message, "#FF768CE"));
+        LogInternal(FormatMessage("ERR", message, "FF768C")); // Pink-red color for errors
         Verse.Log.TryOpenLogWindow();
     }
 
@@ -92,14 +80,13 @@ public class RimLogger(string name)
         {
             _debugEnabled = Assembly.GetCallingAssembly().GetCustomAttribute<DebuggableAttribute>()?.DebuggingFlags
                 == DebuggableAttribute.DebuggingModes.DisableOptimizations;
-
             _debugChecked = true;
         }
 
         // Show debug messages if: 
         // 1. It's a debug build OR 
         // 2. ToolkitCore's debug logging is enabled
-        if (_debugEnabled || GetToolkitCoreDebugSetting())
+        if (_debugEnabled || ToolkitCoreSettings.enableDebugLogging)
         {
             LogInternal(FormatMessage("DEBUG", message, ColorUtility.ToHtmlStringRGB(ColorLibrary.LightPink)));
         }
@@ -108,40 +95,6 @@ public class RimLogger(string name)
     protected virtual void LogInternal(string message)
     {
         Verse.Log.Message(message);
-    }
-
-    private static bool GetToolkitCoreDebugSetting()
-    {
-        if (_toolkitCoreChecked)
-        {
-            return _toolkitCoreDebugEnabled ?? false;
-        }
-
-        _toolkitCoreChecked = true;
-
-        try
-        {
-            // Use reflection to access ToolkitCore's setting
-            Type toolkitCoreSettingsType = Type.GetType("ToolkitCore.ToolkitCoreSettings, ToolkitCore");
-            if (toolkitCoreSettingsType != null)
-            {
-                FieldInfo debugField = toolkitCoreSettingsType.GetField("enableDebugLogging",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (debugField != null)
-                {
-                    _toolkitCoreDebugEnabled = (bool)(debugField.GetValue(null) ?? false);
-                    return _toolkitCoreDebugEnabled.Value;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // If we can't access ToolkitCore's setting, fall back to false
-            Verse.Log.Warning($"Failed to access ToolkitCore debug setting: {ex.Message}");
-        }
-
-        _toolkitCoreDebugEnabled = false;
-        return false;
     }
 }
 
