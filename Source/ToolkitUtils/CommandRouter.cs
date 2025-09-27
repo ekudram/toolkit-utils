@@ -70,10 +70,12 @@ public class CommandRouter : GameComponent
 
     private static void ProcessCommandQueue()
     {
-        List<TwitchToolkit.TwitchInterfaceBase>? interfaces = null;
+        List<TwitchInterfaceBase>? interfaces = null;
 
         while (!CommandQueue.IsEmpty)
         {
+            TkUtils.Logger.Debug($"Processing CommandQueue with {CommandQueue.Count} messages.");
+
             // Change to non-nullable and handle the null check properly
             if (!CommandQueue.TryDequeue(out TwitchMessageWrapper message) || message == null)
             {
@@ -87,18 +89,21 @@ public class CommandRouter : GameComponent
                 continue;
             }
 
-            interfaces ??= Current.Game.components.OfType<TwitchToolkit.TwitchInterfaceBase>().ToList();
+            interfaces ??= Current.Game.components.OfType<TwitchInterfaceBase>().ToList();
 
-            foreach (TwitchToolkit.TwitchInterfaceBase @interface in interfaces)
+            foreach (TwitchInterfaceBase @interface in interfaces)
             {
+                TkUtils.Logger.Debug($"Queueing message from {message.Username} to {@interface.GetType().Name}.");
                 // Remove the redundant type check - @interface is already the correct type
                 try
                 {
+                    TkUtils.Logger.Debug($"Parsing message from {message.Username}: {message.Message}");
                     LongEventHandler.QueueLongEvent(
                         () => @interface.ParseMessage(message),
                         null,
-                        doAsynchronously: true,
-                        exceptionHandler: null
+                        false,
+                        exceptionHandler: null,
+                        true
                     );
                 }
                 catch (Exception ex)

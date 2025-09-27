@@ -273,7 +273,8 @@ public class Editor : Window
             () => ExecuteSaveOperations(),
             null,
             false,
-            exception => Log.Error($"Error saving TKUtils data: {exception}")
+            exception => Log.Error($"Error saving TKUtils data: {exception}"),
+            true
         );
     }
 
@@ -342,7 +343,8 @@ public class Editor : Window
             },
             null,
             false,
-            null
+            null,
+            true
         );
     }
 
@@ -363,7 +365,8 @@ public class Editor : Window
             },
             null,
             false,
-            null
+            null,
+            true
         );
     }
 
@@ -384,7 +387,8 @@ public class Editor : Window
             },
             null,
             false,
-            null
+            null,
+            true
         );
     }
 
@@ -405,7 +409,8 @@ public class Editor : Window
             },
             null,
             false,
-            null
+            null,
+            true
         );
     }
 }

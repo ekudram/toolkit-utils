@@ -216,7 +216,7 @@ public class PawnKindConfigDialog : Window
                 },
                 null,
                 false,
-                null
+                null, true
             );
         }
         else

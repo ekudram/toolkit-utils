@@ -100,7 +100,7 @@ public static partial class Data
         // Replace Task.Run with LongEventHandler
         if (TkSettings.Offload)
         {
-            LongEventHandler.QueueLongEvent(() => DumpAllData(), null, false, null);
+            LongEventHandler.QueueLongEvent(() => DumpAllData(), null, false, null, true);
         }
         else
         {
@@ -295,7 +295,7 @@ public static partial class Data
             {
                 completed = true;
             }
-        }, null, false, null);
+        }, null, false, null, true);
 
         // Wait for completion (this mimics the async behavior but on the main thread)
         while (!completed)
@@ -351,7 +351,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             SaveJson(obj, path);
-        }, null, false, null);
+        }, null, false, null, true);
     }
 
     public static void SaveCompressedJsonThreaded<T>(T obj, string path) where T : class
@@ -359,7 +359,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             SaveCompressedJson(obj, path);
-        }, null, false, null);
+        }, null, false, null, true);
     }
 
     private static void SaveCompressedJson<T>(T obj, string path) where T : class
@@ -420,7 +420,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             SaveLegacyShop(path);
-        }, null, false, null);
+        }, null, false, null, true);
     }
 
     /// <summary>
@@ -450,7 +450,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             DumpAllData();
-        }, null, false, null);
+        }, null, false, null, true);
     }
 
     // Replace async save methods with threaded versions
@@ -459,7 +459,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             SaveTraits(path);
-        }, null, false, null);
+        }, null, false, null, true);
     }
     /// <summary>
     ///     Saves a list of pawns at the given file path.
@@ -470,7 +470,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             SavePawnKinds(path);
-        }, null, false, null);
+        }, null, false, null, true);
     }
 
     public static void SaveItemDataThreaded(string path)
@@ -478,7 +478,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             SaveItemData(path);
-        }, null, false, null);
+        }, null, false, null, true);
     }
 
     public static void SaveEventDataThreaded(string path)
@@ -486,7 +486,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             SaveEventData(path);
-        }, null, false, null);
+        }, null, false, null, true);
     }
 
     public static void SaveModListThreaded()
@@ -494,7 +494,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             SaveModList();
-        }, null, false, null);
+        }, null, false, null, true);
     }
 
     public static void SaveCommandsThreaded()
@@ -502,7 +502,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             SaveCommands();
-        }, null, false, null);
+        }, null, false, null, true);
     }
 
     private static ReadOnlyDictionary<string?, Color> GetDefaultColors()

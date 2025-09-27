@@ -88,7 +88,7 @@ internal static class StoreItemEditorPatch
             {
                 Data.SaveJson(new ItemList { Items = items }, Paths.ToolkitItemFilePath);
                 Data.SaveItemData(Paths.ItemDataFilePath);
-            }, null, false, null);
+            }, null, false, null,true);
         }
         else
         {

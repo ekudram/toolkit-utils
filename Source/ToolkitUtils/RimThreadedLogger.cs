@@ -76,6 +76,8 @@ public class RimLogger(string name)
 
     public virtual void Debug(string message)
     {
+        //LogInternal(FormatMessage("DEBUG", $"RimLogger Debug check: debugChecked={_debugChecked}, debugEnabled={_debugEnabled}, enableDebugLogging={ToolkitCoreSettings.enableDebugLogging}", ColorUtility.ToHtmlStringRGB(ColorLibrary.LightPink)));
+        
         if (!_debugChecked)
         {
             _debugEnabled = Assembly.GetCallingAssembly().GetCustomAttribute<DebuggableAttribute>()?.DebuggingFlags

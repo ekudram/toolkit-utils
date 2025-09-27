@@ -27,7 +27,8 @@ namespace ToolkitUtilities
                 Initialize,
                 null,
                 false,
-                ExceptionHandler
+                ExceptionHandler,
+                true
             );
         }
 
@@ -35,16 +36,16 @@ namespace ToolkitUtilities
         {
             try
             {
-                TkUtils.Logger.Log("[ToolkitUtilities] Starting initialization after all mods have loaded...");
+                TkUtils.Logger.Log("Starting initialization after all mods have loaded...");
 
                 // Add initialization logic that depends on ToolkitCore and Toolkit here
                 // Example: Verify dependencies, register handlers, etc.
 
-                TkUtils.Logger.Log("[ToolkitUtilities] Initialization complete");
+                TkUtils.Logger.Log("Initialization complete");
             }
             catch (Exception ex)
-            {
-                TkUtils.Logger.Log($"[ToolkitUtilities] Initialization failed: {ex}");
+            {       
+                TkUtils.Logger.Log($"Initialization failed: {ex}");
                 throw;
             }
         }

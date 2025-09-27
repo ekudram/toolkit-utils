@@ -66,7 +66,8 @@ public class CoreAddonMenu : IAddonMenu
                 ReconnectTwitchWrapper,
                 null,
                 false,
-                exception => TkUtils.Logger.Error("Encountered an error during Twitch reconnection: " + exception)
+                exception => TkUtils.Logger.Error("Encountered an error during Twitch reconnection: " + exception),
+                true
             )
         )
     ];
