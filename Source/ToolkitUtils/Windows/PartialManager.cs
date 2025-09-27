@@ -338,7 +338,7 @@ public class PartialManager<T> : Window where T : class, IShopItemBase
 
                 _isIndexing = false;
             },
-            "TKUtils.IndexingPartials", // Translation key for progress dialog
+            null, // Translation key for progress dialog
             false, // show progress bar
             null, // exception handler
             true // run in background (within RimWorld's async system)

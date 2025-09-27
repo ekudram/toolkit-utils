@@ -30,42 +30,42 @@ namespace SirRandoo.ToolkitUtils.Patches;
 ///     A Harmony patch for fixing ToolkitCore's viewer database being
 ///     nulled occasionally.
 /// </summary>
-[HarmonyPatch]
-[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-internal static class ViewerInterfacePatch
-{
-    private static IEnumerable<MethodBase> TargetMethods()
-    {
-        yield return AccessTools.PropertyGetter(typeof(Viewers), nameof(Viewers.All));
-    }
+//[HarmonyPatch]
+//[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+//internal static class ViewerInterfacePatch
+//{
+//    private static IEnumerable<MethodBase> TargetMethods()
+//    {
+//        yield return AccessTools.PropertyGetter(typeof(Viewers), nameof(Viewers.All));
+//    }
 
-    private static Exception? Cleanup(MethodBase original, Exception? exception)
-    {
-        if (exception == null)
-        {
-            TkUtils.Logger.Debug($"[TKUtils] Successfully patched {original.FullDescription()}");
-            return null;
-        }
+//    private static Exception? Cleanup(MethodBase original, Exception? exception)
+//    {
+//        if (exception == null)
+//        {
+//            TkUtils.Logger.Debug($"[TKUtils] Successfully patched {original.FullDescription()}");
+//            return null;
+//        }
 
-        TkUtils.Logger.Error($"Could not patch {original.FullDescription()} -- Things will not work properly!", exception.InnerException ?? exception);
+//        TkUtils.Logger.Error($"Could not patch {original.FullDescription()} -- Things will not work properly!", exception.InnerException ?? exception);
 
-        return null;
-    }
+//        return null;
+//    }
 
-    private static void Prefix()
-    {
-        if (ToolkitData.globalDatabase == null)
-        {
-            TkUtils.Logger.Warn("ToolkitCore's global database was null. Recreating...");
-            ToolkitData.globalDatabase = new GlobalDatabase();
-        }
+//    private static void Prefix()
+//    {
+//        if (ToolkitData.globalDatabase == null)
+//        {
+//            TkUtils.Logger.Warn("ToolkitCore's global database was null. Recreating...");
+//            ToolkitData.globalDatabase = new GlobalDatabase();
+//        }
 
-        if (!ToolkitData.globalDatabase.viewers.NullOrEmpty())
-        {
-            return;
-        }
+//        if (!ToolkitData.globalDatabase.viewers.NullOrEmpty())
+//        {
+//            return;
+//        }
 
-        TkUtils.Logger.Warn("ToolkitCore's viewer data was null. Recreating...");
-        ToolkitData.globalDatabase.viewers = new List<Viewer>();
-    }
-}
+//        TkUtils.Logger.Warn("ToolkitCore's viewer data was null. Recreating...");
+//        ToolkitData.globalDatabase.viewers = new List<Viewer>();
+//    }
+//}

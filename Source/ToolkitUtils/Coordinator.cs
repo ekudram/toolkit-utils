@@ -210,7 +210,7 @@ public class Coordinator : GameComponent
         LongEventHandler.QueueLongEvent(() =>
         {
             Viewers.AwardViewersCoins();
-        }, "Awarding viewer coins", false, null);
+        }, null, false, null);
 
         _rewardPeriodTracker = 0;
         TkUtils.Logger.Debug($"Awarded viewers coins @ {DateTime.Now:T}");

@@ -14,14 +14,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-/*
+/* Project: ToolkitUtils
  * File: CoreAddonMenu.cs
  * 
- * Updated code using Deepseek AI 
  * Date: September 17, 2025
  * 
- * From the AI:
- * 
+ *  
  * Key Changes:
  * 1. Replaced Task.Run with LongEventHandler.QueueLongEvent:
  * 2. This uses RimWorld's native threading system, which is safer for modding and avoids potential conflicts with the game's main thread .
@@ -66,7 +64,7 @@ public class CoreAddonMenu : IAddonMenu
             "TKUtils.AddonMenu.Reconnect".TranslateSimple(),
             () => LongEventHandler.QueueLongEvent(
                 ReconnectTwitchWrapper,
-                "TKUtils.ReconnectTwitch",
+                null,
                 false,
                 exception => TkUtils.Logger.Error("Encountered an error during Twitch reconnection: " + exception)
             )
@@ -97,42 +95,3 @@ public class CoreAddonMenu : IAddonMenu
         }
     }
 }
-/**
-public class CoreAddonMenu : IAddonMenu
-{
-    private static readonly List<FloatMenuOption> Options =
-    [
-        new FloatMenuOption("TKUtils.AddonMenu.Settings".TranslateSimple(), () => Find.WindowStack.Add(new CoreSettingsWindow())),
-        new FloatMenuOption("Message Log", () => Find.WindowStack.Add(new Window_MessageLog())),
-        new FloatMenuOption("Help", () => Application.OpenURL("https://github.com/hodldeeznuts/ToolkitCore/wiki")),
-        new FloatMenuOption(
-            "TKUtils.AddonMenu.Reconnect".TranslateSimple(),
-            () => Task.Run(
-                () =>
-                {
-                    if (TwitchWrapper.Client == null || !TwitchWrapper.Client.IsConnected)
-                    {
-                        TwitchWrapper.StartAsyncStatic();
-
-                        return;
-                    }
-
-                    try
-                    {
-                        TwitchWrapper.Client.Disconnect();
-                    }
-                    catch (Exception e)
-                    {
-                        TkUtils.Logger.Error("Encountered an error while disconnected from Twitch -- You can probably ignore this.", e);
-                    }
-
-                    TwitchWrapper.StartAsyncStatic();
-                }
-            )
-        )
-    ];
-
-    /// <inheritdoc cref="IAddonMenu.MenuOptions"/>
-    public List<FloatMenuOption> MenuOptions() => Options;
-}
-**/

@@ -11,6 +11,7 @@
  */
 
 using RimWorld;
+using SirRandoo.ToolkitUtils;
 using System;
 using Verse;
 
@@ -24,7 +25,7 @@ namespace ToolkitUtilities
             // Queue initialization to run after all other mods have completed their loading
             LongEventHandler.QueueLongEvent(
                 Initialize,
-                "ToolkitUtilitiesInitialization",
+                null,
                 false,
                 ExceptionHandler
             );
@@ -34,23 +35,23 @@ namespace ToolkitUtilities
         {
             try
             {
-                Log.Message("[ToolkitUtilities] Starting initialization after all mods have loaded...");
+                TkUtils.Logger.Log("[ToolkitUtilities] Starting initialization after all mods have loaded...");
 
                 // Add initialization logic that depends on ToolkitCore and Toolkit here
                 // Example: Verify dependencies, register handlers, etc.
 
-                Log.Message("[ToolkitUtilities] Initialization complete");
+                TkUtils.Logger.Log("[ToolkitUtilities] Initialization complete");
             }
             catch (Exception ex)
             {
-                Log.Error($"[ToolkitUtilities] Initialization failed: {ex}");
+                TkUtils.Logger.Log($"[ToolkitUtilities] Initialization failed: {ex}");
                 throw;
             }
         }
 
         private static void ExceptionHandler(Exception ex)
         {
-            Log.Error($"[ToolkitUtilities] Initialization encountered an error: {ex}");
+            TkUtils.Logger.Error($"[ToolkitUtilities] Initialization encountered an error: {ex}");
         }
     }
 }

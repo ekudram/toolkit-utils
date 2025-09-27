@@ -271,7 +271,7 @@ public class Editor : Window
         // Queue the save operation using RimWorld's thread-safe handler
         LongEventHandler.QueueLongEvent(
             () => ExecuteSaveOperations(),
-            "TKUtilsSavingData",
+            null,
             false,
             exception => Log.Error($"Error saving TKUtils data: {exception}")
         );
@@ -340,7 +340,7 @@ public class Editor : Window
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
             },
-            "Saving item partial data",
+            null,
             false,
             null
         );
@@ -361,7 +361,7 @@ public class Editor : Window
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
             },
-            "Saving event partial data",
+            null,
             false,
             null
         );
@@ -382,7 +382,7 @@ public class Editor : Window
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
             },
-            "Saving trait partial data",
+            null,
             false,
             null
         );
@@ -403,7 +403,7 @@ public class Editor : Window
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
             },
-            "Saving pawn partial data",
+            null,
             false,
             null
         );

@@ -257,7 +257,7 @@ public class TraitConfigDialog : Window
                             break;
                     }
                 },
-                "TKUtils.SavingTraits", // Translation key for progress dialog
+                null, // Translation key for progress dialog
                 false, // show progress bar
                 null, // exception handler
                 true // run in background

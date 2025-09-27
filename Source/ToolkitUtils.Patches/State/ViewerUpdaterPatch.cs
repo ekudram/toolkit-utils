@@ -61,7 +61,7 @@ internal static class ViewerUpdaterPatch
 
     private static bool Prefix(TwitchMessageWrapper? messageWrapper)
     {
-        TkUtils.Logger.Debug($"[TKUtils] ViewerUpdaterPatch.Prefix called for {messageWrapper?.Username}");
+        TkUtils.Logger.Log($"[TKUtils] ViewerUpdaterPatch.Prefix called for {messageWrapper?.Username}");
         if (messageWrapper?.Message == null)
         {
             TkUtils.Logger.Debug("[TKUtils] ViewerUpdaterPatch.Prefix Message wrapper or message is null, skipping");
@@ -91,9 +91,14 @@ internal static class ViewerUpdaterPatch
         TkUtils.Logger.Debug($"[TKUtils] Updated viewer badges for {messageWrapper.Username}: " +
                      $"mod={viewer.mod}, sub={viewer.subscriber}, vip={viewer.vip}");
 
-        if (!Data.RegisterViewer(viewer.username))
+        try
         {
-            TkUtils.Logger.Warn($"Viewer {viewer.username} could not be added to the viewer list through participation.");
+            bool registered = Data.RegisterViewer(viewer.username);
+            TkUtils.Logger.Warn($"Viewer registration for {viewer.username}: {(registered ? "success" : "already exists/failed")}");
+        }
+        catch (Exception ex)
+        {
+            TkUtils.Logger.Error($"Viewer registration error for {viewer.username}: {ex.Message}");
         }
 
         return false;

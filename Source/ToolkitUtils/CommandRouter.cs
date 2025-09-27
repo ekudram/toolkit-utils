@@ -96,7 +96,7 @@ public class CommandRouter : GameComponent
                 {
                     LongEventHandler.QueueLongEvent(
                         () => @interface.ParseMessage(message),
-                        "ProcessingTwitchCommand",
+                        null,
                         doAsynchronously: true,
                         exceptionHandler: null
                     );

@@ -214,7 +214,7 @@ public class PawnKindConfigDialog : Window
                             break;
                     }
                 },
-                "Saving pawn kind data",
+                null,
                 false,
                 null
             );
