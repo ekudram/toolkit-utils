@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Toolkit Utilities 2.0e</name>
+  <author>Captolamia</author>
+  <url>https://steamcommunity.com/sharedfiles/filedetails/?id=3576163690</url>
+  <description>
+    ⚡ **ToolkitUtils 2.0e - Enhanced Twitch Commands** ⚡
+
+    **REQUIRES both ToolkitCore 2.0e AND Twitch Toolkit 2.0e!**
+
+    Supercharge your Twitch integration! This essential expansion adds advanced commands, improved viewer feedback, and quality-of-life enhancements to complete your Twitch Toolkit experience.
+
+    **Features:**
+    • Updated TwitchLib 3.4.0 integration
+    • Enhanced viewer feedback systems
+    • Advanced command repertoire
+    • Improved chat interaction
+    • Streamer quality-of-life tools
+
+    **This mod completes the Twitch Toolkit 2.0e trilogy!**
+    For the full experience, ensure you have all three mods installed in this order:
+    1. 🏗️ ToolkitCore 2.0e (Foundation)
+    2. 🎮 Twitch Toolkit 2.0e (Main Features)
+    3. ⚡ ToolkitUtils 2.0e (Enhanced Commands) ← YOU ARE HERE!
+
+    **⚠️ INCOMPATIBLE with older TwitchToolkit versions!**
+
+    **Report Issues:** https://github.com/ekudram/toolkit-utils/issues
+  </description>
+
+  <packageId>sirrandoo.captolamia.tku</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+
+  <modDependencies>
+    <li>
+      <packageId>captolamia.toolkitcore</packageId>
+      <displayName>Toolkit Core 2.0e</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3013877477</steamWorkshopUrl>
+    </li>
+    <li>
+      <packageId>captolamia.twitchtoolkit</packageId>
+      <displayName>Twitch Toolkit 2.0e</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3013874066</steamWorkshopUrl>
+    </li>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+    </li>
+  </modDependencies>
+
+  <loadAfter>
+    <li>captolamia.toolkitcore</li>
+    <li>captolamia.twitchtoolkit</li>
+    <li>Torann.ARimworldOfMagic</li>
+  </loadAfter>
+
+  <incompatibleWith>
+    <li>sirrandoo.tku</li>
+    <li>hodlhodl.twitchtoolkit</li>
+    <li>hodlhodl.toolkitcore</li>
+    <li>nry.twitchtoolkit</li>
+    <li>nry.toolkitcore</li>
+    <li>sirrandoo.twitchtoolkit</li>
+  </incompatibleWith>
+</ModMetaData>
