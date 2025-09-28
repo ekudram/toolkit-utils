@@ -57,36 +57,70 @@ internal static class BuyPatch
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     private static bool Prefix(CommandDriver? __instance, TwitchMessageWrapper messageWrapper)
     {
-        TkUtils.Logger.Debug($"BuyPatch Prefix: {messageWrapper.Username} - {messageWrapper.Message}");
+        TkUtils.Logger.Debug($"=== BuyPatch.Prefix START ===");
+        TkUtils.Logger.Debug($"BuyPatch: Username = {messageWrapper.Username}");
+        TkUtils.Logger.Debug($"BuyPatch: Original message = '{messageWrapper.Message}'");
+        TkUtils.Logger.Debug($"BuyPatch: __instance type = {__instance?.GetType().Name}");
+        TkUtils.Logger.Debug($"BuyPatch: __instance.command.defName = {__instance?.command?.defName}");
+        TkUtils.Logger.Debug($"BuyPatch: __instance.command.command = {__instance?.command?.command}");
 
         if (__instance == null)
         {
             TkUtils.Logger.Error("BuyPatch: CommandDriver instance is null!");
+            TkUtils.Logger.Debug($"=== BuyPatch.Prefix END (null instance) ===");
             return true;
         }
 
         if (!TkSettings.StoreState)
         {
             TkUtils.Logger.Debug("BuyPatch: Store is disabled, skipping");
+            TkUtils.Logger.Debug($"=== BuyPatch.Prefix END (store disabled) ===");
             return false;
         }
 
         Viewer viewer = Viewers.GetViewer(messageWrapper.Username);
+        TkUtils.Logger.Debug($"BuyPatch: Viewer found = {viewer?.username}");
+        TkUtils.Logger.Debug($"BuyPatch: Viewer coins = {viewer?.coins}");
+
         TwitchMessageWrapper processedMessage = messageWrapper;
 
-        if (!__instance.command.defName.Equals("Buy"))
+        // Check if this is a shortcut command that needs to be converted to a buy command
+        bool isShortcutCommand = !__instance.command.defName.Equals("Buy");
+        TkUtils.Logger.Debug($"BuyPatch: Is shortcut command? {isShortcutCommand}");
+
+        if (isShortcutCommand)
         {
             TkUtils.Logger.Debug("BuyPatch: Not a Buy command, checking for shortcut");
-            processedMessage = messageWrapper.WithMessage($"!{CommandDefOf.Buy.command} {messageWrapper.Message.Substring(1)}");
+            string newMessage = $"!{CommandDefOf.Buy.command} {messageWrapper.Message.Substring(1)}";
+            processedMessage = messageWrapper.WithMessage(newMessage);
+            TkUtils.Logger.Debug($"BuyPatch: Converted shortcut message = '{processedMessage.Message}'");
         }
 
-        if (processedMessage!.Message.Split(' ').Length < 2)
+        // Check if the message has enough segments for a purchase
+        string[] messageSegments = processedMessage.Message.Split(' ');
+        TkUtils.Logger.Debug($"BuyPatch: Message segments count = {messageSegments.Length}");
+        TkUtils.Logger.Debug($"BuyPatch: Message segments = [{string.Join(", ", messageSegments)}]");
+
+        if (messageSegments.Length < 2)
         {
+            TkUtils.Logger.Debug("BuyPatch: Message has insufficient segments, skipping purchase");
+            TkUtils.Logger.Debug($"=== BuyPatch.Prefix END (insufficient segments) ===");
             return false;
         }
 
-        Purchase_Handler.ResolvePurchase(viewer, processedMessage);
+        TkUtils.Logger.Debug($"BuyPatch: Calling Purchase_Handler.ResolvePurchase for '{processedMessage.Message}'");
 
+        try
+        {
+            Purchase_Handler.ResolvePurchase(viewer, processedMessage);
+            TkUtils.Logger.Debug("BuyPatch: Purchase_Handler.ResolvePurchase completed successfully");
+        }
+        catch (Exception ex)
+        {
+            TkUtils.Logger.Error($"BuyPatch: Purchase_Handler.ResolvePurchase threw an exception: {ex}");
+        }
+
+        TkUtils.Logger.Debug($"=== BuyPatch.Prefix END ===");
         return false;
     }
 }

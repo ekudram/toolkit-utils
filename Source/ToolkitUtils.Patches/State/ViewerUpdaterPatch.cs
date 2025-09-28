@@ -94,7 +94,7 @@ internal static class ViewerUpdaterPatch
         try
         {
             bool registered = Data.RegisterViewer(viewer.username);
-            TkUtils.Logger.Warn($"Viewer registration for {viewer.username}: {(registered ? "success" : "already exists/failed")}");
+            TkUtils.Logger.Debug($"Viewer registration for {viewer.username}: {(registered ? "success" : "already exists/failed")}");
         }
         catch (Exception ex)
         {

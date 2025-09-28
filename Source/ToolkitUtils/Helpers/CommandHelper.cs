@@ -27,10 +27,10 @@ public static class CommandHelper
 {
     public static void Execute(this Command command, TwitchMessageWrapper message, bool emojiOverride = false)
     {
-        TkUtils.Logger.Debug($"[TKUtils] CommandHelper.Execute started for command {command.command} (defName: {command.defName}) by user {message.Username}");
+        TkUtils.Logger.Debug($"CommandHelper.Execute started for command {command.command} (defName: {command.defName}) by user {message.Username}");
         if (command == null || message == null || string.IsNullOrEmpty(message.Message) || string.IsNullOrEmpty(message.Username))
         {
-            TkUtils.Logger.Debug("[TKUtils] CommandHelper.Execute exiting early due to null/empty values.");
+            TkUtils.Logger.Debug("CommandHelper.Execute exiting early due to null/empty values.");
             return;
         }
         if (command.requiresAdmin && !message.HasBadges("broadcaster"))
@@ -71,7 +71,7 @@ public static class CommandHelper
 
     private static void ExecuteInternal(Command command, TwitchMessageWrapper message)
     {
-        TkUtils.Logger.Debug($"[TKUtils] CommandHelper.ExecuteInternal started for command {command.command} (defName: {command.defName}) by user {message.Username}");
+        TkUtils.Logger.Debug($"CommandHelper.ExecuteInternal started for command {command.command} (defName: {command.defName}) by user {message.Username}");
 
         try
         {
@@ -96,10 +96,10 @@ public static class CommandHelper
 
     internal static string ValidatePrefix(string prefix)
     {
-        TkUtils.Logger.Debug($"[TKUtils] CommandHelper.ValidatePrefix started for prefix {prefix}");
+        TkUtils.Logger.Debug($"CommandHelper.ValidatePrefix started for prefix {prefix}");
         if (string.IsNullOrEmpty(prefix))
         {
-            TkUtils.Logger.Debug("[TKUtils] CommandHelper.ValidatePrefix exiting early due to null/empty prefix.");
+            TkUtils.Logger.Debug("CommandHelper.ValidatePrefix exiting early due to null/empty prefix.");
             return string.Empty;
         }
         if (prefix.StartsWith("/") || prefix.StartsWith("."))
@@ -112,7 +112,7 @@ public static class CommandHelper
 
     internal static bool IsModerator(this Viewer viewer)
     {
-        TkUtils.Logger.Debug($"[TKUtils] CommandHelper.IsModerator started for viewer {viewer?.username ?? "null"}");
+        TkUtils.Logger.Debug($"CommandHelper.IsModerator started for viewer {viewer?.username ?? "null"}");
 
         if (viewer == null || string.IsNullOrEmpty(viewer.username))
         {

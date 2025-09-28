@@ -98,8 +98,20 @@ internal static class CommandsHandlerPatch
         {
             segments = segments.Where(i => !i.EqualsIgnoreCase("--text")).ToList();
         }
+
+        TkUtils.Logger.Debug($"CommandsHandlerPatch: Before LocateCommand - sanitized = '{sanitized}'");
+        TkUtils.Logger.Debug($"CommandsHandlerPatch: Segments count = {segments.Count}");
+        TkUtils.Logger.Debug($"CommandsHandlerPatch: Segments = [{string.Join(", ", segments)}]");
+
         string commandText = "!" + CombineSegments(segments).Trim();
-        LocateCommand(segments.ToArray())?.Execute(messageWrapper, text);
+        Command locatedCommand = LocateCommand(segments.ToArray());
+
+        TkUtils.Logger.Debug($"CommandsHandlerPatch: Located command = {locatedCommand?.defName} ('{locatedCommand?.command}')");
+        TkUtils.Logger.Debug($"CommandsHandlerPatch: Calling Execute with emojiOverride = {text}");
+
+        // FIX: Create a new message wrapper with the processed command text
+        TwitchMessageWrapper processedMessage = messageWrapper.WithMessage(commandText);
+        locatedCommand?.Execute(processedMessage, text);
 
         return false;
     }
@@ -154,7 +166,7 @@ internal static class CommandsHandlerPatch
 
     private static bool IsCommand(string command, string input)
     {   
-        TkUtils.Logger.Debug($"[TKUtils] Comparing command '{command}' to input '{input}'");
+        TkUtils.Logger.Debug($"Comparing command '{command}' to input '{input}'");
 
         if (TkSettings.ToolkitStyleCommands && input.StartsWith(command, StringComparison.InvariantCultureIgnoreCase))
         {
@@ -166,7 +178,10 @@ internal static class CommandsHandlerPatch
 
     private static string? GetCommandString(string message)
     {
-        TkUtils.Logger.Debug($"[TKUtils] Getting command string from message: {message}");
+        TkUtils.Logger.Debug($"Getting command string from message: {message}");
+
+        // Fix autocorrect spacing issue: "item [specification]" -> "item[specification]"
+        message = message.Replace(" [", "[");
 
         if (message.StartsWith("/w"))
         {
