@@ -24,7 +24,7 @@ namespace SirRandoo.ToolkitUtils.Models.HealHandlers;
 public record DefaultHealHandler : IHealHandler
 {
     /// <inheritdoc />
-    public string ModId { get; init; } = "sirrandoo.tku";
+    public string ModId { get; init; } = "sirrandoo.captolamia.tku";
 
     public bool CanHeal(Hediff hediff)
     {

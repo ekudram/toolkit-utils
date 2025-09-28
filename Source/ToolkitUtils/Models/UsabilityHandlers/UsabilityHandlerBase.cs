@@ -65,7 +65,7 @@ public abstract record UsabilityHandlerBase<T> : IUsabilityHandler where T : Thi
         }
     }
 
-    public virtual string ModId { get; init; } = "sirrandoo.tku";
+    public virtual string ModId { get; init; } = "sirrandoo.captolamia.tku";
 
     protected abstract bool IsUsable(T comp, Pawn pawn, ThingDef thing);
     protected abstract void Use(T comp, Pawn pawn, Thing thing);

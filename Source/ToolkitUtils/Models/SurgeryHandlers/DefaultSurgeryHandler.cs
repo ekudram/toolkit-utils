@@ -24,7 +24,7 @@ namespace SirRandoo.ToolkitUtils.Models.SurgeryHandlers;
 public record DefaultSurgeryHandler : ISurgeryHandler
 {
     /// <inheritdoc />
-    public string ModId { get; init; } = "sirrandoo.tku";
+    public string ModId { get; init; } = "sirrandoo.captolamia.tku";
 
     public bool IsSurgery(RecipeDef recipe) => recipe.IsSurgery;
 

@@ -31,8 +31,8 @@ namespace SirRandoo.ToolkitUtils.Incidents;
 public class Wear : IncidentVariablesBase
 {
     private int _cost;
-    private ArgWorker.ItemProxy _item;
-    private Pawn _pawn;
+    private ArgWorker.ItemProxy? _item;
+    private Pawn? _pawn;
 
     public override bool CanHappen(string msg, Viewer viewer)
     {

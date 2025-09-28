@@ -13,6 +13,12 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+/*
+ * Project: TwitchToolkit
+ * File: Use.cs
+ * 
+ * 
+ */
 
 using System;
 using System.Collections.Generic;
@@ -34,34 +40,50 @@ namespace SirRandoo.ToolkitUtils.Incidents;
 public class Use : IncidentVariablesBase
 {
     private int _amount = 1;
-    private ThingItem _buyableItem;
-    private IUsabilityHandler _handler;
-    private Pawn _pawn;
+    private ThingItem? _buyableItem;
+    private IUsabilityHandler? _handler;
+    private Pawn? _pawn;
 
     public override bool CanHappen(string msg, Viewer viewer)
     {
+        TkUtils.Logger.Debug($"=== Use.CanHappen START ===");
+        TkUtils.Logger.Debug($"Viewer: {viewer.username}");
+        TkUtils.Logger.Debug($"Message: {msg}");
+        TkUtils.Logger.Debug($"Store enabled: {TkSettings.StoreState}");
+        TkUtils.Logger.Debug($"Use enabled: {BuyItemSettings.mustResearchFirst}");
+        TkUtils.Logger.Debug($"Message parts: {string.Join(", ", CommandFilter.Parse(msg))}");
+
         if (!PurchaseHelper.TryGetPawn(viewer.username, out _pawn))
         {
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.NoPawn".Localize());
-
+            TkUtils.Logger.Debug($"=== Use.CanHappen END (failed) ===");
             return false;
         }
+
+        TkUtils.Logger.Debug($"Pawn: {_pawn?.LabelShort ?? "null"}");
 
         var worker = ArgWorker.CreateInstance(CommandFilter.Parse(msg).Skip(2));
 
         if (!worker.TryGetNextAsItem(out ArgWorker.ItemProxy item) || !item.IsValid())
         {
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidItemQuery".LocalizeKeyed(item?.Thing?.Name ?? worker.GetLast()));
-
+            TkUtils.Logger.Debug($"=== Use.CanHappen END (failed) ===");
             return false;
         }
 
         _buyableItem = item.Thing;
 
+        TkUtils.Logger.Debug($"Item: {_buyableItem?.Name ?? "null"}");
+        TkUtils.Logger.Debug($"Item defName: {_buyableItem?.Thing?.defName ?? "null"}");
+        TkUtils.Logger.Debug($"ItemData: {_buyableItem?.ItemData != null}");
+        TkUtils.Logger.Debug($"ItemData.IsUsable: {_buyableItem?.ItemData?.IsUsable}");
+        TkUtils.Logger.Debug($"Item Cost: {_buyableItem?.Cost ?? 0}");
+
         if (item.TryGetError(out string? error))
         {
+            TkUtils.Logger.Debug($@"The item ""{item.Thing.Name}"" is not valid: {error}");
             MessageHelper.ReplyToUser(viewer.username, error);
-
+            TkUtils.Logger.Debug($"=== Use.CanHappen END (failed) ===");
             return false;
         }
 
@@ -72,15 +94,16 @@ public class Use : IncidentVariablesBase
 
         if (!PurchaseHelper.TryMultiply(_buyableItem.Cost, _amount, out int cost))
         {
+            TkUtils.Logger.Debug($@"The cost for ""{item.Thing.Name}"" overflowed when multiplied by {_amount} (single cost = {_buyableItem.Cost})");
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.Overflowed".Localize());
-
+            TkUtils.Logger.Debug($"=== Use.CanHappen END (failed) ===");
             return false;
         }
 
         if (!viewer.CanAfford(cost))
         {
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.InsufficientBalance".LocalizeKeyed(cost.ToString("N0"), viewer.GetViewerCoins().ToString("N0")));
-
+            TkUtils.Logger.Debug($"=== Use.CanHappen END (failed) ===");
             return false;
         }
 
@@ -92,7 +115,7 @@ public class Use : IncidentVariablesBase
                 viewer.username,
                 "TKUtils.ResearchRequired".LocalizeKeyed(item.Thing.Thing.LabelCap.RawText, prerequisites.Select(p => p.LabelCap.RawText).SectionJoin())
             );
-
+            TkUtils.Logger.Debug($"=== Use.CanHappen END (failed) ===");
             return false;
         }
 
@@ -110,13 +133,16 @@ public class Use : IncidentVariablesBase
 
         if (_handler == null || item.Thing.ItemData?.IsUsable != true)
         {
+            TkUtils.Logger.Debug($@"The item ""{item.Thing.Name}"" does not have a usability handler!");
+            TkUtils.Logger.Debug("Registered handlers are: " + string.Join(", ", CompatRegistry.AllUsabilityHandlers.Select(h => h.GetType().Name)));
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.DisabledItem".Localize());
-
+            TkUtils.Logger.Debug($"=== Use.CanHappen END (failed) ===");
             return false;
         }
 
         _buyableItem = item!.Thing;
 
+        TkUtils.Logger.Debug($"=== Use.CanHappen END (success) ===");
         return true;
     }
 

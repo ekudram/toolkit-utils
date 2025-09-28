@@ -14,6 +14,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/*  
+ *  Project: ToolkitUtils
+ *  File: IngestabilityUsabilityHandler.cs
+ *  
+ * 
+ */
+
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Interfaces;
 using Verse;
@@ -32,5 +39,5 @@ public record IngestabilityUsabilityHandler : IUsabilityHandler
         pawn.needs.food.CurLevel += thing.Ingested(pawn, pawn.needs.food.NutritionWanted);
     }
 
-    public string ModId { get; init; } = "sirrandoo.tku";
+    public string ModId { get; init; } = "sirrandoo.captolamia.tku";
 }

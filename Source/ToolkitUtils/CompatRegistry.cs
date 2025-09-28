@@ -86,14 +86,21 @@ public static class CompatRegistry
 
     internal static void ProcessType(Type type)
     {
+        TkUtils.Logger.Debug($"Processing type for compatibility: {type.FullName}");
+
         if (Activator.CreateInstance(type) is not ICompatibilityProvider provider)
         {
+            TkUtils.Logger.Debug($"Type {type.FullName} is not an ICompatibilityProvider");
             return;
         }
+
+        TkUtils.Logger.Debug($"Found provider: {provider.GetType().FullName} with ModId: {provider.ModId}");
 
         bool dependencyLoaded = provider.ModId.StartsWith("Ludeon")
             ? ModLister.GetExpansionWithIdentifier(provider.ModId)?.Status == ExpansionStatus.Active
             : ModLister.GetActiveModWithIdentifier(provider.ModId) != null;
+
+        TkUtils.Logger.Debug($"Dependency loaded for {provider.ModId}: {dependencyLoaded}");
 
         if (!dependencyLoaded)
         {
@@ -103,35 +110,38 @@ public static class CompatRegistry
         RegisterAndCatalogue(provider);
     }
 
+
     private static void RegisterAndCatalogue(ICompatibilityProvider provider)
     {
+        TkUtils.Logger.Debug($"Registering compatibility provider: {provider.GetType().FullName}");
+
         CompatibilityProviders.Add(provider);
 
         switch (provider)
         {
             case ISurgeryHandler surgery:
                 SurgeryHandlers.Add(surgery);
-
+                TkUtils.Logger.Debug($"Registered surgery handler: {surgery.GetType().FullName}");
                 break;
             case IUsabilityHandler usability:
                 UsabilityHandlers.Add(usability);
-
+                TkUtils.Logger.Debug($"Registered usability handler: {usability.GetType().FullName}");
                 break;
             case IHealHandler heal:
                 HealHandlers.Add(heal);
-
+                TkUtils.Logger.Debug($"Registered heal handler: {heal.GetType().FullName}");
                 break;
             case IPawnPowerHandler pawnPower:
                 PawnPowerHandlers.Add(pawnPower);
-
+                TkUtils.Logger.Debug($"Registered pawn power handler: {pawnPower.GetType().FullName}");
                 break;
             case IMagicCompatibilityProvider magic:
                 Magic = magic;
-
+                TkUtils.Logger.Debug($"Registered magic compatibility provider: {magic.GetType().FullName}");
                 break;
             case IAlienCompatibilityProvider alien:
                 Alien = alien;
-
+                TkUtils.Logger.Debug($"Registered alien compatibility provider: {alien.GetType().FullName}");
                 break;
         }
     }
