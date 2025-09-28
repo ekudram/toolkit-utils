@@ -34,14 +34,12 @@ public class HealMe : IncidentVariablesBase
         if (!PurchaseHelper.TryGetPawn(viewer.username, out _pawn))
         {
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.NoPawn".Localize());
-
             return false;
         }
 
         if (IncidentSettings.HealMe.FairFights && _pawn!.mindState.lastAttackTargetTick > 0 && Find.TickManager.TicksGame < _pawn.mindState.lastAttackTargetTick + 1800)
         {
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.InCombat".Localize());
-
             return false;
         }
 
@@ -51,12 +49,13 @@ public class HealMe : IncidentVariablesBase
         {
             case Hediff hediff:
                 _toHeal = hediff;
-
                 break;
             case BodyPartRecord record:
                 _toRestore = record;
-
                 break;
+            default:
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.FullHeal.NoHealableInjuries".Localize());
+                return false;
         }
 
         return _toHeal != null || _toRestore != null;

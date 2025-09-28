@@ -31,11 +31,15 @@ public class HealAll : IncidentVariablesBase
 
     public override bool CanHappen(string msg, Viewer viewer)
     {
+        bool hasHealableItems = false;
+        int colonistsInCombat = 0;
+
         foreach (Pawn pawn in Find.ColonistBar.GetColonistsInOrder().Where(p => !p.Dead))
         {
             if (IncidentSettings.HealAll.FairFights && pawn.mindState.lastAttackTargetTick > 0
                 && Find.TickManager.TicksGame < pawn.mindState.lastAttackTargetTick + 1800)
             {
+                colonistsInCombat++;
                 continue;
             }
 
@@ -45,16 +49,29 @@ public class HealAll : IncidentVariablesBase
             {
                 case Hediff hediff:
                     _healQueue.Add(hediff);
-
+                    hasHealableItems = true;
                     break;
                 case BodyPartRecord record:
                     _restoreQueue.Add(new Pair<Pawn, BodyPartRecord>(pawn, record));
-
+                    hasHealableItems = true;
                     break;
             }
         }
 
-        return _healQueue.Any(i => i != null) || _restoreQueue.Any(i => i.Second != null);
+        if (!hasHealableItems)
+        {
+            if (colonistsInCombat > 0 && Find.ColonistBar.GetColonistsInOrder().Count(p => !p.Dead) == colonistsInCombat)
+            {
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.Heal.AllColonistsInCombat".Localize());
+            }
+            else
+            {
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.FullHeal.NoHealableInjuries".Localize());
+            }
+            return false;
+        }
+
+        return true;
     }
 
     public override void Execute()

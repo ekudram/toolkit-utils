@@ -32,21 +32,42 @@ public class HealRandom : IncidentVariablesBase
 
     public override bool CanHappen(string msg, Viewer viewer)
     {
+        // Get colonists that are alive and not in combat (if FairFights is enabled)
         List<Pawn> pawns = Find.ColonistBar.GetColonistsInOrder()
            .Where(p => !p.Dead)
-           .Where(
-                pawn => !IncidentSettings.HealRandom.FairFights
-                    || (pawn.mindState.lastAttackTargetTick > 0 && Find.TickManager.TicksGame <= pawn.mindState.lastAttackTargetTick + 1800)
-            )
+           .Where(pawn => !IncidentSettings.HealRandom.FairFights
+               || pawn.mindState.lastAttackTargetTick <= 0
+               || Find.TickManager.TicksGame > pawn.mindState.lastAttackTargetTick + 1800)
            .ToList();
 
-        if (!pawns.Select(p => new Pair<Pawn, object>(p, HealHelper.GetPawnHealable(p))).Where(r => r.Second != null).TryRandomElement(out Pair<Pawn, object> random))
+        if (!pawns.Any())
         {
+            if (IncidentSettings.HealRandom.FairFights)
+            {
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.AllColonistsInCombat".Localize());
+            }
+            else
+            {
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.NoColonists".Localize());
+            }
             return false;
         }
 
-        if (random.First == null || random.Second == null)
+        // Find healable colonists with their healable items
+        var healableColonists = pawns
+            .Select(p => new Pair<Pawn, object>(p, HealHelper.GetPawnHealable(p)))
+            .Where(r => r.Second != null)
+            .ToList();
+
+        if (!healableColonists.Any())
         {
+            MessageHelper.ReplyToUser(viewer.username, "TKUtils.FullHeal.NoHealableInjuries".Localize());
+            return false;
+        }
+
+        if (!healableColonists.TryRandomElement(out Pair<Pawn, object> random))
+        {
+            MessageHelper.ReplyToUser(viewer.username, "TKUtils.HealRandom.Failed".Localize());
             return false;
         }
 
@@ -56,12 +77,13 @@ public class HealRandom : IncidentVariablesBase
         {
             case Hediff hediff:
                 _toHeal = hediff;
-
                 break;
             case BodyPartRecord record:
                 _toRestore = record;
-
                 break;
+            default:
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.HealRandom.InvalidTarget".Localize());
+                return false;
         }
 
         return _target != null && (_toHeal != null || _toRestore != null);
@@ -69,47 +91,50 @@ public class HealRandom : IncidentVariablesBase
 
     public override void Execute()
     {
-        if (_toHeal != null)
+        // Final validation before executing
+        if (_target == null || (_toHeal == null && _toRestore == null))
         {
-            HealHelper.Cure(_toHeal);
-
-            NotifySuccess(_toHeal.LabelCap);
-        }
-
-        if (_toRestore == null)
-        {
+            MessageHelper.ReplyToUser(Viewer.username, "TKUtils.HealRandom.NoValidTarget".Localize());
             return;
         }
 
-        _target.health.RestorePart(_toRestore);
+        bool healed = false;
 
-        NotifySuccess(_toRestore.Label);
+        if (_toHeal != null)
+        {
+            HealHelper.Cure(_toHeal);
+            healed = true;
+            NotifySuccess(_toHeal.LabelCap);
+        }
+        else if (_toRestore != null)
+        {
+            _target.health.RestorePart(_toRestore);
+            healed = true;
+            NotifySuccess(_toRestore.Label);
+        }
+
+        if (healed)
+        {
+            Viewer.Charge(storeIncident);
+        }
     }
 
     private void NotifySuccess(string affected)
     {
-        Viewer.Charge(storeIncident);
-
-        var description = "";
-
-        if (_toHeal != null)
+        if (ToolkitSettings.PurchaseConfirmations)
         {
-            description = "TKUtils.HealLetter.RecoveredDescription";
+            var response = _toHeal != null ? "TKUtils.HealRandom.Recovered" : "TKUtils.HealRandom.Restored";
+            MessageHelper.ReplyToUser(Viewer.username, response.LocalizeKeyed(_target.LabelShort, affected));
         }
 
-        if (_toRestore != null)
-        {
-            description = "TKUtils.HealLetter.RestoredDescription";
-        }
+        var description = _toHeal != null ? "TKUtils.HealLetter.RecoveredDescription" : "TKUtils.HealLetter.RestoredDescription";
+        string descriptionTranslated = description.LocalizeKeyed(_target.LabelShort.CapitalizeFirst(), affected);
 
-        if (description.NullOrEmpty())
-        {
-            return;
-        }
-
-        string? descriptionTranslated = description.LocalizeKeyed(_target.LabelShort.CapitalizeFirst(), affected);
-        MessageHelper.SendConfirmation(Viewer.username, descriptionTranslated);
-
-        Current.Game.letterStack.ReceiveLetter("TKUtils.HealLetter.Title".Localize(), descriptionTranslated, LetterDefOf.PositiveEvent, _target);
+        Current.Game.letterStack.ReceiveLetter(
+            "TKUtils.HealLetter.Title".Localize(),
+            descriptionTranslated,
+            LetterDefOf.PositiveEvent,
+            _target
+        );
     }
 }

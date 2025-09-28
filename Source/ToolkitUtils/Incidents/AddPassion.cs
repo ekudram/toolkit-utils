@@ -36,17 +36,31 @@ public class AddPassion : IncidentVariablesBase
 
     public override bool CanHappen(string msg, Viewer viewer)
     {
-        if (!PurchaseHelper.TryGetPawn(viewer.username, out _pawn))
+        var parts = CommandFilter.Parse(msg);
+        if (parts.Count() < 3)
         {
-            MessageHelper.ReplyToUser(viewer.username, "TKUtils.NoPawn".Localize());
-
+            MessageHelper.ReplyToUser(viewer.username, "Usage: !passion <skillname>. Example: !passion Shooting");
             return false;
         }
 
-        var worker = ArgWorker.CreateInstance(CommandFilter.Parse(msg).Skip(2));
-
-        if (!worker.TryGetNextAsSkill(out SkillDef skillDef))
+        if (!PurchaseHelper.TryGetPawn(viewer.username, out _pawn))
         {
+            MessageHelper.ReplyToUser(viewer.username, "TKUtils.NoPawn".Localize());
+            return false;
+        }
+
+        var worker = ArgWorker.CreateInstance(parts.Skip(2));
+
+        // Calculate available skills once and reuse
+        List<string> availableSkillNames = DefDatabase<SkillDef>.AllDefsListForReading
+                                            .Where(s => _pawn.skills.skills.Any(skill => skill.def == s && !skill.TotallyDisabled))
+                                            .Select(s => s.defName)
+                                            .ToList();
+        string availableSkillsText = string.Join(", ", availableSkillNames);
+
+        if (!worker.TryGetNextAsSkill(out SkillDef? skillDef))
+        {
+            MessageHelper.ReplyToUser(viewer.username, $"Please specify a valid skill. Available skills for your pawn are: {availableSkillsText}");
             return false;
         }
 
@@ -54,8 +68,7 @@ public class AddPassion : IncidentVariablesBase
 
         if (_target == null)
         {
-            MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidSkillQuery".LocalizeKeyed(worker.GetLast()));
-
+            MessageHelper.ReplyToUser(viewer.username, $"'{worker.GetLast()}' is not a valid skill. Available skills: {availableSkillsText}");
             return false;
         }
 
@@ -65,7 +78,6 @@ public class AddPassion : IncidentVariablesBase
         }
 
         MessageHelper.ReplyToUser(viewer.username, "TKUtils.Passion.Full".Localize());
-
         return false;
     }
 

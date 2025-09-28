@@ -59,6 +59,13 @@ public class FullHeal : IncidentVariablesBase
         var healed = 0;
         var iterations = 0;
 
+        // Check if there are actually healable injuries before starting
+        if (HealHelper.GetPawnHealable(_pawn) == null)
+        {
+            MessageHelper.ReplyToUser(Viewer.username, "TKUtils.NotInjured".Localize());
+            return;
+        }
+
         while (true)
         {
             if (!Viewer.CanAfford(storeIncident.cost))
@@ -82,8 +89,14 @@ public class FullHeal : IncidentVariablesBase
             }
 
             TkUtils.Logger.Warn("Exceeded the maximum number of iterations during full heal.");
-
             break;
+        }
+
+        // Also add feedback if no injuries were actually healed
+        if (healed == 0)
+        {
+            MessageHelper.ReplyToUser(Viewer.username, "TKUtils.FullHeal.NoHealableInjuries".Localize());
+            return;
         }
 
         MessageHelper.SendConfirmation(
