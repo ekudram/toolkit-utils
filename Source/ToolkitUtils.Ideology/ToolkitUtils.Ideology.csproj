@@ -27,7 +27,7 @@
         <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\ToolkitCore\1.6\Assemblies\TwitchLib.Client.Models.dll</HintPath>
       </Reference>
       <Reference Include="TwitchToolkit">
-        <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkit\v1.6\Assemblies\TwitchToolkit.dll</HintPath>
+        <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkit2_0e\v1.6\Assemblies\TwitchToolkit.dll</HintPath>
       </Reference>
     </ItemGroup>
 </Project>
