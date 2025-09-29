@@ -1,20 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <OutputPath>..\..\$(RimWorldVersion)\Assemblies</OutputPath>
+        <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkitUtil2_0e\1.6\Assemblies</OutputPath>
       <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
       <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <OutputPath>..\..\$(RimWorldVersion)\Assemblies\</OutputPath>
+        <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkitUtil2_0e\1.6\Assemblies</OutputPath>
       <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
       <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkitUtil2_0e\1.6\Assemblies</OutputPath>
       <Deterministic>False</Deterministic>
       <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
       <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+      <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkitUtil2_0e\1.6\Assemblies</OutputPath>
       <Deterministic>False</Deterministic>
       <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
       <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

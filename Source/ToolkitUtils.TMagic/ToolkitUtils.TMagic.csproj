@@ -7,11 +7,13 @@
       <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <BaseOutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkitUtil2_0e\Compatibility\TMagic\1.6\Assemblies</BaseOutputPath>
       <Deterministic>False</Deterministic>
       <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
       <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+      <BaseOutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkitUtil2_0e\Compatibility\TMagic\1.6\Assemblies</BaseOutputPath>
       <Deterministic>False</Deterministic>
       <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
       <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
