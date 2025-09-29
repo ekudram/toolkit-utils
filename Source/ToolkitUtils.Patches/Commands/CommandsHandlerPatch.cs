@@ -64,6 +64,8 @@ internal static class CommandsHandlerPatch
     }
     private static bool Prefix(TwitchMessageWrapper? messageWrapper)
     {
+        LogSettings();
+
         TkUtils.Logger.Debug($"[TKUtils] CommandsHandlerPatch.Prefix started. TkSettings.Commands is {TkSettings.Commands}");
 
         if (!TkSettings.Commands || messageWrapper == null || string.IsNullOrEmpty(messageWrapper.Message) || string.IsNullOrEmpty(messageWrapper.Username))
@@ -138,63 +140,116 @@ internal static class CommandsHandlerPatch
     {
         TkUtils.Logger.Debug($"[TKUtils] Locating command from segments: {string.Join(", ", query)}");
 
-        foreach (Command commandDef in DefDatabase<Command>.AllDefs.Where(c => c.enabled))
+        // CRITICAL: Log all available commands in the database
+        var allCommands = DefDatabase<Command>.AllDefs.ToList();
+        TkUtils.Logger.Debug($"[TKUtils] Total commands in DefDatabase: {allCommands.Count}");
+        TkUtils.Logger.Debug($"[TKUtils] Enabled commands: {allCommands.Count(c => c.enabled)}");
+
+        foreach (Command cmd in allCommands)
         {
+            TkUtils.Logger.Debug($"[TKUtils] Available command: '{cmd.command}' (defName: {cmd.defName}, enabled: {cmd.enabled})");
+        }
+
+        foreach (Command commandDef in allCommands.Where(c => c.enabled))
+        {
+            TkUtils.Logger.Debug($"[TKUtils] Checking command: '{commandDef.command}' (defName: {commandDef.defName})");
+
             if (commandDef.command.Contains(" "))
             {
                 int spaces = commandDef.command.Count(c => c.Equals(' '));
                 string joined = string.Join(" ", query.Take(spaces));
 
+                TkUtils.Logger.Debug($"[TKUtils] Multi-word command - spaces: {spaces}, joined: '{joined}'");
+
                 if (!IsCommand(commandDef.command, joined))
                 {
+                    TkUtils.Logger.Debug($"[TKUtils] Multi-word command '{commandDef.command}' doesn't match '{joined}'");
                     continue;
                 }
 
+                TkUtils.Logger.Debug($"[TKUtils] FOUND multi-word command: '{commandDef.command}'");
                 return commandDef;
             }
 
-            if (!IsCommand(commandDef.command, query.Take(1).First()))
+            string firstSegment = query.Take(1).First();
+            TkUtils.Logger.Debug($"[TKUtils] Single-word command - comparing '{commandDef.command}' to '{firstSegment}'");
+
+            if (!IsCommand(commandDef.command, firstSegment))
             {
+                TkUtils.Logger.Debug($"[TKUtils] Single-word command '{commandDef.command}' doesn't match '{firstSegment}'");
                 continue;
             }
 
+            TkUtils.Logger.Debug($"[TKUtils] FOUND single-word command: '{commandDef.command}'");
             return commandDef;
         }
 
+        TkUtils.Logger.Debug($"[TKUtils] No command found for segments: {string.Join(", ", query)}");
         return null;
     }
 
     private static bool IsCommand(string command, string input)
-    {   
+    {
         TkUtils.Logger.Debug($"Comparing command '{command}' to input '{input}'");
 
-        if (TkSettings.ToolkitStyleCommands && input.StartsWith(command, StringComparison.InvariantCultureIgnoreCase))
+        // Remove the ! prefix if present for comparison
+        string cleanCommand = command.StartsWith("!") ? command.Substring(1) : command;
+        string cleanInput = input.StartsWith("!") ? input.Substring(1) : input;
+
+        TkUtils.Logger.Debug($"Cleaned - command: '{cleanCommand}', input: '{cleanInput}'");
+
+        if (TkSettings.ToolkitStyleCommands && cleanInput.StartsWith(cleanCommand, StringComparison.InvariantCultureIgnoreCase))
         {
+            TkUtils.Logger.Debug($"ToolkitStyleCommands match: '{cleanInput}' starts with '{cleanCommand}'");
             return true;
         }
 
-        return input.EqualsIgnoreCase(command);
+        bool exactMatch = cleanInput.EqualsIgnoreCase(cleanCommand);
+        TkUtils.Logger.Debug($"Exact match: {exactMatch}");
+
+        return exactMatch;
     }
 
     private static string? GetCommandString(string message)
     {
         TkUtils.Logger.Debug($"Getting command string from message: {message}");
+        TkUtils.Logger.Debug($"TkSettings.Prefix: '{TkSettings.Prefix}', TkSettings.BuyPrefix: '{TkSettings.BuyPrefix}'");
 
         // Fix autocorrect spacing issue: "item [specification]" -> "item[specification]"
         message = message.Replace(" [", "[");
+        TkUtils.Logger.Debug($"After space fix: {message}");
 
         if (message.StartsWith("/w"))
         {
             message = message[3..];
+            TkUtils.Logger.Debug($"After /w removal: {message}");
         }
 
         if (message.StartsWith(TkSettings.Prefix, StringComparison.InvariantCultureIgnoreCase))
         {
-            return message[TkSettings.Prefix.Length..];
+            string result = message[TkSettings.Prefix.Length..];
+            TkUtils.Logger.Debug($"Prefix match, returning: '{result}'");
+            return result;
         }
 
-        return message.StartsWith(TkSettings.BuyPrefix, StringComparison.InvariantCultureIgnoreCase)
-            ? $"{CommandDefOf.Buy.command} {message[TkSettings.BuyPrefix.Length..]}"
-            : null;
+        if (message.StartsWith(TkSettings.BuyPrefix, StringComparison.InvariantCultureIgnoreCase))
+        {
+            string result = $"{CommandDefOf.Buy.command} {message[TkSettings.BuyPrefix.Length..]}";
+            TkUtils.Logger.Debug($"BuyPrefix match, returning: '{result}'");
+            return result;
+        }
+
+        TkUtils.Logger.Debug("No prefix match, returning null");
+        return null;
+    }
+
+    // Temporary method to log settings
+    private static void LogSettings()
+    {
+        TkUtils.Logger.Debug($"[TKUtils] Current Settings:");
+        TkUtils.Logger.Debug($"[TKUtils] - Prefix: '{TkSettings.Prefix}'");
+        TkUtils.Logger.Debug($"[TKUtils] - BuyPrefix: '{TkSettings.BuyPrefix}'");
+        TkUtils.Logger.Debug($"[TKUtils] - ToolkitStyleCommands: {TkSettings.ToolkitStyleCommands}");
+        TkUtils.Logger.Debug($"[TKUtils] - Commands: {TkSettings.Commands}");
     }
 }
