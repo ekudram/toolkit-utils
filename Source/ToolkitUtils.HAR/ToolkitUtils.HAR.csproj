@@ -2,12 +2,20 @@
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
         <CompatibilityFor>AlienRace</CompatibilityFor>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <BaseOutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkitUtil2_0e\Compatibility\AlienRace\1.6\Assemblies</BaseOutputPath>
+      <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>	
       <Deterministic>False</Deterministic>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
       <Deterministic>False</Deterministic>
+	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\ToolkitUtils\ToolkitUtils.csproj" Private="false" ExcludeAssets="runtime" />
@@ -15,6 +23,52 @@
     <ItemGroup>
       <Reference Include="AlienRace">
         <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\294100\839005762\1.6\Assemblies\AlienRace.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Core">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Data">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Drawing">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.IO.Compression.FileSystem">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Numerics">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Runtime.Serialization">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Xml">
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Update="System.Xml.Linq">
+        <Private>False</Private>
       </Reference>
     </ItemGroup>
 </Project>

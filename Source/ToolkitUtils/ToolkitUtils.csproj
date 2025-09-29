@@ -41,6 +41,7 @@
       </Reference>
       <Reference Include="TwitchToolkit">
         <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkit2_0e\v1.6\Assemblies\TwitchToolkit.dll</HintPath>
+        <Private>False</Private>
       </Reference>
     </ItemGroup>
 
@@ -78,10 +79,20 @@
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
       <Deterministic>False</Deterministic>
+      <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
       <Deterministic>False</Deterministic>
+      <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <BaseOutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\TwitchToolkitUtil2_0e\1.6\Assemblies</BaseOutputPath>
+      <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
