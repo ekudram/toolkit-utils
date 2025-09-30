@@ -603,6 +603,7 @@ public static class ToolkitSettingsWorker
         listing.DrawDescription("TKUtils.ShowVoteWindow.Description".Localize().AppendWithSpace("TKUtils.Fields.DefaultValue".LocalizeKeyed("On".Localize())));
         listing.CheckboxLabeled("TKUtils.EnlargeWindow.Label".Localize(), ref ToolkitSettings.LargeVotingWindow);
         listing.DrawDescription("TKUtils.EnlargeWindow.Description".Localize().AppendWithSpace("TKUtils.Fields.DefaultValue".LocalizeKeyed("On".Localize())));
+        listing.CheckboxLabeled("TKUtils.ShowStoryTellerButton.Label".Localize(), ref ToolkitSettings.AlwaysShowStorytellerButton, "TKUtils.ShowStoryTellerButton.tip".Localize());
         listing.Gap();
         listing.Gap();
 
