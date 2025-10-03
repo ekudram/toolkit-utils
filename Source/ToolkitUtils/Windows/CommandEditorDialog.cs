@@ -160,15 +160,18 @@ public class CommandEditorDialog : Window_CommandEditor
 
         GUI.color = _invalidId ? new Color(1f, 0.53f, 0.76f) : Color.white;
 
-        if (FieldDrawer.DrawTextField(fieldRect, $"{TkSettings.Prefix}{_command.command}", out string newContent))
+        if (FieldDrawer.DrawTextField(fieldRect, $"{TkSettings.Prefix}{_command.command}", out string? newContent))
         {
-            if (newContent.ToToolkit().Length - TkSettings.Prefix.Length < 0)
+            // newContent is guaranteed to be non-null here due to [NotNullWhen(true)]
+            string? toolkitContent = newContent.ToToolkit();
+
+            if (toolkitContent == null || toolkitContent.Length - TkSettings.Prefix.Length < 0)
             {
                 _invalidId = true;
             }
             else
             {
-                _command.command = newContent.Substring(TkSettings.Prefix.Length).ToToolkit();
+                _command.command = newContent.Substring(TkSettings.Prefix.Length).ToToolkit() ?? string.Empty;
                 _invalidId = false;
             }
         }

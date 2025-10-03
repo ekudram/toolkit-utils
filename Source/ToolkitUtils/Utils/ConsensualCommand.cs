@@ -33,6 +33,13 @@ public abstract class ConsensualCommand : CommandBase
         var worker = ArgWorker.CreateInstance(CommandFilter.Parse(twitchMessage.Message).Skip(1));
         string? argument = worker.GetNext();
 
+        if (argument == null)
+        {
+            // Handle null case - maybe show help or return early
+            MessageHelper.ReplyToUser(twitchMessage.Username, "Please specify a command");
+            return;
+        }
+
         switch (argument.ToLowerInvariant())
         {
             case "accept":
@@ -143,16 +150,16 @@ public abstract class ConsensualCommand : CommandBase
         MessageHelper.ReplyToUser(asker, "TKUtils.RequestApproved".LocalizeKeyed(askee));
     }
 
-    protected virtual void ProcessRequest(string? username, Viewer viewer)
+    protected virtual void ProcessRequest(string username, Viewer viewer)
     {
-        if (!PurchaseHelper.TryGetPawn(username, out Pawn _))
+        if (!PurchaseHelper.TryGetPawn(username, out Pawn? _))
         {
             MessageHelper.ReplyToUser(username, "TKUtils.NoPawn".LocalizeKeyed(username));
 
             return;
         }
 
-        if (!PurchaseHelper.TryGetPawn(viewer.username, out Pawn _))
+        if (!PurchaseHelper.TryGetPawn(viewer.username, out Pawn? _))
         {
             MessageHelper.ReplyToUser(username, "TKUtils.PawnNotFound".LocalizeKeyed(viewer.username));
 

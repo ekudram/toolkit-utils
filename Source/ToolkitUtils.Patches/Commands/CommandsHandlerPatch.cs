@@ -64,7 +64,7 @@ internal static class CommandsHandlerPatch
     }
     private static bool Prefix(TwitchMessageWrapper? messageWrapper)
     {
-        LogSettings();
+        //LogSettings();
 
         TkUtils.Logger.Debug($"[TKUtils] CommandsHandlerPatch.Prefix started. TkSettings.Commands is {TkSettings.Commands}");
 
@@ -106,14 +106,23 @@ internal static class CommandsHandlerPatch
         TkUtils.Logger.Debug($"CommandsHandlerPatch: Segments = [{string.Join(", ", segments)}]");
 
         string commandText = "!" + CombineSegments(segments).Trim();
+
         Command locatedCommand = LocateCommand(segments.ToArray());
 
         TkUtils.Logger.Debug($"CommandsHandlerPatch: Located command = {locatedCommand?.defName} ('{locatedCommand?.command}')");
         TkUtils.Logger.Debug($"CommandsHandlerPatch: Calling Execute with emojiOverride = {text}");
 
         // FIX: Create a new message wrapper with the processed command text
-        TwitchMessageWrapper processedMessage = messageWrapper.WithMessage(commandText);
-        locatedCommand?.Execute(processedMessage, text);
+        if (locatedCommand != null)
+        {
+            TwitchMessageWrapper processedMessage = messageWrapper.WithMessage(commandText);
+            locatedCommand.Execute(processedMessage, text);
+        }
+        else
+        {
+            // Optional: Handle the "command not found" case, perhaps by logging a warning
+            TkUtils.Logger.Debug($"[TKUtils] No command found for input: {sanitized}");
+        }
 
         return false;
     }
@@ -136,7 +145,7 @@ internal static class CommandsHandlerPatch
         return string.Join(" ", segments.Select(s => s.Contains(' ') ? $@"""{s.Replace("\"", "\\\"")}""" : s).ToArray());
     }
 
-    private static Command? LocateCommand(string[] query)
+    private static Command LocateCommand(string[] query)
     {
         TkUtils.Logger.Debug($"[TKUtils] Locating command from segments: {string.Join(", ", query)}");
 

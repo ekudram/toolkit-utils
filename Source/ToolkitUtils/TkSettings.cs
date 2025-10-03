@@ -420,6 +420,7 @@ public class TkSettings : ModSettings
 
     public override void ExposeData()
     {
+        TkUtils.Logger.Debug($"=== ExposeData TKSettings called! Mode: {Scribe.mode}");
         Scribe_Values.Look(ref Commands, "commands", true);
         Scribe_Values.Look(ref Prefix, "prefix", "!");
         Scribe_Values.Look(ref BuyPrefix, "buyPrefix", "$");
@@ -493,7 +494,7 @@ public class TkSettings : ModSettings
         /// <summary>
         ///     The def name of the work type instance.
         /// </summary>
-        public string WorkTypeDef;
+        public string? WorkTypeDef;
 
         public void ExposeData()
         {

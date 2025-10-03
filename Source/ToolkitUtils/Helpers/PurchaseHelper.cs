@@ -69,7 +69,7 @@ public static class PurchaseHelper
 
     public static bool ToChance(this int value) => value > 0 && Rand.Chance(value / 100f);
 
-    public static bool TryGetPawn(string? viewer, [NotNullWhen(true)] out Pawn? pawn, bool kidnapped = false)
+    public static bool TryGetPawn(string viewer, [NotNullWhen(true)] out Pawn? pawn, bool kidnapped = false)
     {
         pawn = CommandBase.GetOrFindPawn(viewer.ToLowerInvariant(), kidnapped);
 

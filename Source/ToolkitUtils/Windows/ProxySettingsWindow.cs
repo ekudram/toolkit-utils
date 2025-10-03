@@ -20,10 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using RimWorld;
 using System;
 using System.Collections.Generic;
-using RimWorld;
+using ToolkitCore;
 using ToolkitUtils.UX;
+using TwitchToolkit;
 using UnityEngine;
 using Verse;
 
@@ -138,6 +140,11 @@ public class ProxySettingsWindow : Window
     public override void PreClose()
     {
         base.PreClose();
+      
+        var toolkitMod = LoadedModManager.GetMod<TwitchToolkit.TwitchToolkit>();
+        if (toolkitMod != null)
+            toolkitMod.GetSettings<ToolkitSettings>().Write();
+
         _mod.WriteSettings();
     }
 
