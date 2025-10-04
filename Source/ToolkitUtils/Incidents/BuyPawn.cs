@@ -14,9 +14,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// MODIFICATIONS © 2025 Captolamia: Updated for TwitchLib 3.4+, threading safety, and stability fixes
+
 using System;
 using System.Linq;
-using JetBrains.Annotations;
 using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Interfaces;
@@ -33,69 +34,128 @@ namespace SirRandoo.ToolkitUtils.Incidents;
 public class BuyPawn : IncidentVariablesBase
 {
     private PawnKindDef _kindDef = RimWorld.PawnKindDefOf.Colonist;
+    private XenotypeDef _xenotypeDef = null; 
     private IntVec3 _loc;
     private Map _map;
     private PawnKindItem _pawnKindItem;
 
+    /// <summary>
+    ///     CanHappen checks to see
+    ///     if viewer has pawn
+    ///     if we are on anyplayermap
+    ///     if we can spawn our pawn here 
+    ///     and more
+    /// </summary>
     public override bool CanHappen(string msg, Viewer viewer)
     {
+        // 1. Check if user already has pawn
         if (CommandBase.GetOrFindPawn(viewer.username) != null)
         {
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.HasPawn".Localize());
-
             return false;
         }
 
+        // 2. Check if we're on a player map
         _map = Helper.AnyPlayerMap;
-
         if (_map == null)
         {
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.NoMap".Localize());
-
             return false;
         }
 
+        // 3. Check if we can spawn
         if (!CellFinder.TryFindRandomEdgeCellWith(p => _map.reachability.CanReachColony(p) && !p.Fogged(_map), _map, CellFinder.EdgeRoadChance_Neutral, out _loc))
         {
             TkUtils.Logger.Warn("No reachable location to spawn a viewer pawn!");
-
             return false;
         }
 
+        // 4. Get default pawn kind (usually human)
         GetDefaultKind();
-
-        if (!TkSettings.PurchasePawnKinds)
-        {
-            return CanPurchaseRace(viewer, _pawnKindItem);
-        }
+        TkUtils.Logger.Debug("GetDefaultKind: " + _pawnKindItem);
 
         var worker = ArgWorker.CreateInstance(CommandFilter.Parse(msg).Skip(2));
 
-        if (!worker.TryGetNextAsPawn(out PawnKindItem temp) || _pawnKindItem?.ColonistKindDef == null)
+        // 5. Process pawn kind (if PurchasePawnKinds is enabled)
+        if (TkSettings.PurchasePawnKinds)
         {
-            if (worker.GetLast().NullOrEmpty())
+            if (worker.TryGetNextAsPawn(out PawnKindItem temp) && temp?.ColonistKindDef != null)
             {
-                return CanPurchaseRace(viewer, _pawnKindItem!);
+                _pawnKindItem = temp;
+                _kindDef = _pawnKindItem.ColonistKindDef;
+                TkUtils.Logger.Debug("Processed to kind: " + _pawnKindItem);
             }
+            else if (!worker.GetLast().NullOrEmpty())
+            {
+                // Invalid pawn kind specified
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidKindQuery".LocalizeKeyed(worker.GetLast()));
+                return false;
+            }
+            // else: no pawn kind specified, use default
+        }
 
-            MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidKindQuery".LocalizeKeyed(worker.GetLast()));
+        // 6. Process xenotype (optional, only if Biotech is active)
+        if (ModsConfig.BiotechActive && worker.HasNext())
+        {
+            string xenotypeInput = worker.GetNext();
+            if (!xenotypeInput.NullOrEmpty())
+            {
+                _xenotypeDef = DefDatabase<XenotypeDef>.AllDefs.FirstOrDefault(
+                    x => x.defName.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase) ||
+                         x.label.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase));
 
+                if (_xenotypeDef == null)
+                {
+                    MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
+                    return false; // Invalid xenotype specified, fail purchase
+                }
+                TkUtils.Logger.Debug("Xenotype set to: " + _xenotypeDef.defName);
+            }
+            // else: xenotype input was empty, ignore it
+        }
+
+        // 7. Validate the final selection
+        if (!_kindDef.RaceProps.Humanlike)
+        {
+            MessageHelper.ReplyToUser(viewer.username, "TKUtils.BuyPawn.Humanlike".Localize());
             return false;
         }
-
-        _pawnKindItem = temp;
-        _kindDef = _pawnKindItem.ColonistKindDef;
-
-        if (_kindDef.RaceProps.Humanlike)
-        {
-            return CanPurchaseRace(viewer, _pawnKindItem);
-        }
-
-        MessageHelper.ReplyToUser(viewer.username, "TKUtils.BuyPawn.Humanlike".Localize());
-
-        return false;
+        TkUtils.Logger.Debug($"Final selection - PawnKind: {_kindDef?.defName}, Xenotype: {_xenotypeDef?.defName ?? "None"}");
+        // 8. Check if purchase is allowed
+        return CanPurchaseRace(viewer, _pawnKindItem);
     }
 
+    /// <summary>
+    /// Processes xenotype from command arguments if Biotech is active
+    /// </summary>
+    private bool TryProcessXenotype(ArgWorker worker, Viewer viewer)
+    {
+        if (!ModsConfig.BiotechActive || !worker.HasNext())
+        {
+            return true; // No xenotype to process, but that's fine
+        }
+
+        string xenotypeInput = worker.GetNext();
+        if (!xenotypeInput.NullOrEmpty())
+        {
+            _xenotypeDef = DefDatabase<XenotypeDef>.AllDefs.FirstOrDefault(
+                x => x.defName.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase) ||
+                     x.label.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase));
+
+            if (_xenotypeDef == null)
+            {
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
+                return false;
+            }
+
+            TkUtils.Logger.Debug($"Xenotype set to: {_xenotypeDef.defName}");
+        }
+
+        return true;
+    }
+    /// <summary>
+    /// Excutes the command...
+    /// </summary>
     public override void Execute()
     {
         try
@@ -105,7 +165,9 @@ public class BuyPawn : IncidentVariablesBase
                 Faction.OfPlayer,
                 allowFood: false,
                 mustBeCapableOfViolence: true,
-                fixedIdeo: Find.FactionManager.OfPlayer.ideos.GetRandomIdeoForNewPawn()
+                fixedIdeo: Find.FactionManager.OfPlayer.ideos.GetRandomIdeoForNewPawn(),
+                // Add xenotype parameter if Biotech is active and xenotype is specified
+                forcedXenotype: ModsConfig.BiotechActive ? _xenotypeDef : null
             );
 
             Pawn pawn = PawnGenerator.GeneratePawn(request);
@@ -113,7 +175,6 @@ public class BuyPawn : IncidentVariablesBase
             if (!(pawn.Name is NameTriple name))
             {
                 TkUtils.Logger.Warn("Pawn name is not a name triple!");
-
                 return;
             }
 
@@ -132,14 +193,27 @@ public class BuyPawn : IncidentVariablesBase
             }
 
             Viewer.Charge(_pawnKindItem.Cost, _pawnKindItem.Data?.KarmaType ?? storeIncident.karmaType);
-            MessageHelper.SendConfirmation(Viewer.username, "TKUtils.BuyPawn.Confirmation".Localize());
+
+            // Add xenotype info to confirmation message if applicable
+            string confirmationMsg = "TKUtils.BuyPawn.Confirmation".Localize();
+            if (ModsConfig.BiotechActive && _xenotypeDef != null)
+            {
+                confirmationMsg += " " + "TKUtils.BuyPawn.WithXenotype".LocalizeKeyed(_xenotypeDef.label);
+            }
+
+            MessageHelper.SendConfirmation(Viewer.username, confirmationMsg);
         }
         catch (Exception e)
         {
             TkUtils.Logger.Error("Could not execute buy pawn", e);
         }
     }
-
+    /// <summary>
+    /// Can purchase the humankind race
+    /// </summary>
+    /// <param name="viewer"></param>
+    /// <param name="target"></param>
+    /// <returns></returns>
     private static bool CanPurchaseRace(Viewer viewer, IShopItemBase target)
     {
         if (!target.Enabled && TkSettings.PurchasePawnKinds)
@@ -158,7 +232,9 @@ public class BuyPawn : IncidentVariablesBase
 
         return false;
     }
-
+    /// <summary>
+    /// Gets the defaultkind.  Normally just a human
+    /// </summary>
     private void GetDefaultKind()
     {
         if (Data.TryGetPawnKind($"${RimWorld.PawnKindDefOf.Colonist.race.defName}", out PawnKindItem human) && (human!.Enabled || !TkSettings.PurchasePawnKinds))

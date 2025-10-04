@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// MODIFICATIONS © 2025 Captolamia: Updated for TwitchLib 3.4+, threading safety, and stability fixes
+
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
@@ -22,7 +24,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ToolkitCore;
 using ToolkitCore.Utilities;
-using TwitchLib.Client.Models;
 using TwitchToolkit;
 
 namespace SirRandoo.ToolkitUtils.Commands;

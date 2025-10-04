@@ -53,7 +53,9 @@ public class PawnKindItem : IShopItemBase
     [JsonProperty("price")] public int Cost { get; set; }
 
     [JsonIgnore] public IShopDataBase Data { get; set; }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public void ResetName()
     {
         if (ColonistKindDef != null)

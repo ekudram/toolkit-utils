@@ -58,7 +58,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             PawnKinds = LoadJson<List<PawnKindItem>>(path, ignoreErrors) ?? new List<PawnKindItem>();
-        }, null, false, null, true);
+        }, null, false, null, true, false);
     }
 
     /// <summary>
@@ -71,6 +71,7 @@ public static partial class Data
     }
     private static void ValidatePawnKinds()
     {
+        TkUtils.Logger.Debug("=== ValidatePawnKinds reached ===");
         List<PawnKindDef> kindDefs = DefDatabase<PawnKindDef>.AllDefs.Where(k => k.RaceProps.Humanlike).ToList();
         PawnKinds.RemoveAll(k => kindDefs.Find(d => d.race.defName.Equals(k.DefName)) == null);
 
@@ -91,6 +92,7 @@ public static partial class Data
 
     private static void ValidatePawnKindData()
     {
+        TkUtils.Logger.Debug("=== ValidatePawnKindData reached ===");
         var builder = new StringBuilder();
 
         foreach (PawnKindItem pawn in PawnKinds)
@@ -124,6 +126,7 @@ public static partial class Data
     /// <param name="partialData">A collection of partial data to load</param>
     public static void LoadPawnPartial(IEnumerable<PawnKindItem> partialData)
     {
+        TkUtils.Logger.Debug("=== LoadPawnPartial reached ===");
         var builder = new StringBuilder();
 
         foreach (PawnKindItem partial in partialData)
@@ -170,6 +173,7 @@ public static partial class Data
     [ContractAnnotation("input:notnull => true,kind:notnull; input:notnull => false,kind:null")]
     public static bool TryGetPawnKind(string? input, out PawnKindItem kind)
     {
+        TkUtils.Logger.Debug("=== TryGetPawnKind reached ===");
         if (input.StartsWith("$"))
         {
             input = input.Substring(1);

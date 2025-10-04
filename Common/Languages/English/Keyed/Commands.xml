@@ -63,6 +63,7 @@
     <TKUtils.PawnClass.Mana>Mana</TKUtils.PawnClass.Mana>
     <TKUtils.PawnClass.None>You do not have a class.</TKUtils.PawnClass.None>
     <TKUtils.PawnClass.Points>{0} point(s) available.</TKUtils.PawnClass.Points>
+  
     
     <!-- Pawn Relations -->
     <TKUtils.PawnRelations.None>You don't have any relationships with other viewers.</TKUtils.PawnRelations.None>
@@ -126,4 +127,7 @@
     
     <!-- Marriage -->
     <TKUtils.Marriage.NoSlots>The marriage would violate a pawn's beliefs.</TKUtils.Marriage.NoSlots>
+
+  <TKUtils.InvalidXenotype>Invalid xenotype '{0}'. Please use a valid xenotype name.</TKUtils.InvalidXenotype>
+  <TKUtils.BuyPawn.WithXenotype>({0})</TKUtils.BuyPawn.WithXenotype>
 </LanguageData>

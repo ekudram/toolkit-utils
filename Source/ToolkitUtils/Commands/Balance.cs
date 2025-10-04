@@ -18,17 +18,18 @@
 // Project: ToolkitUtils
 // Usage: A command that displays the user's current coin and karma balance
 
+// MODIFICATIONS © 2025 Captolamia: Updated for TwitchLib 3.4+, threading safety, and stability fixes
+
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Utils;
-using TwitchLib.Client.Models;
 using TwitchToolkit;
 using TwitchToolkit.Utilities;
 using Verse;
 using ToolkitCore;
-using ToolkitCore.Utilities;
+
 namespace SirRandoo.ToolkitUtils.Commands;
 
 [UsedImplicitly]

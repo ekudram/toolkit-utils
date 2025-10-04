@@ -420,7 +420,7 @@ public class TkSettings : ModSettings
 
     public override void ExposeData()
     {
-        TkUtils.Logger.Debug($"=== ExposeData TKSettings called! Mode: {Scribe.mode}");
+        //TkUtils.Logger.Debug($"=== ExposeData TKSettings called! Mode: {Scribe.mode}");
         Scribe_Values.Look(ref Commands, "commands", true);
         Scribe_Values.Look(ref Prefix, "prefix", "!");
         Scribe_Values.Look(ref BuyPrefix, "buyPrefix", "$");
