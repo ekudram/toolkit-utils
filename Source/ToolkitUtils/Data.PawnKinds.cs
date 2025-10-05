@@ -20,13 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using JetBrains.Annotations;
+using RimWorld;
+using SirRandoo.ToolkitUtils.Helpers;
+using SirRandoo.ToolkitUtils.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using JetBrains.Annotations;
-using SirRandoo.ToolkitUtils.Helpers;
-using SirRandoo.ToolkitUtils.Models;
 using Verse;
 
 namespace SirRandoo.ToolkitUtils;
@@ -173,18 +174,97 @@ public static partial class Data
     [ContractAnnotation("input:notnull => true,kind:notnull; input:notnull => false,kind:null")]
     public static bool TryGetPawnKind(string? input, out PawnKindItem kind)
     {
-        TkUtils.Logger.Debug("=== TryGetPawnKind reached ===");
-        if (input.StartsWith("$"))
-        {
-            input = input.Substring(1);
+        TkUtils.Logger.Warn($"TryGetPawnKind searching for: '{input}'");
 
-            kind = PawnKinds.Find(t => string.Equals(t.DefName, input));
+        if (input == null)
+        {
+            kind = null;
+            return false;
+        }
+
+        // Find ALL matches
+        var allMatches = PawnKinds.Where(t =>
+            t.Name.Equals(input, StringComparison.OrdinalIgnoreCase) ||
+            t.DefName.Equals(input, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        if (allMatches.Count == 0)
+        {
+            TkUtils.Logger.Warn($"No match found for: '{input}'");
+            kind = null;
+            return false;
+        }
+
+        // Filter out invalid entries and log what we found
+        var validMatches = allMatches.Where(m => m.ColonistKindDef != null).ToList();
+
+        TkUtils.Logger.Warn($"Found {allMatches.Count} total matches, {validMatches.Count} valid matches for '{input}'");
+
+        foreach (var match in allMatches)
+        {
+            TkUtils.Logger.Warn($"Match: Name='{match.Name}', DefName='{match.DefName}', ColonistKindDef='{match.ColonistKindDef?.defName ?? "NULL"}'");
+        }
+
+        if (validMatches.Count == 0)
+        {
+            TkUtils.Logger.Warn($"No valid pawn kinds found for '{input}' - all matches have null ColonistKindDef");
+            kind = null;
+            return false;
+        }
+
+        // Selection logic
+        PawnKindItem selected;
+
+        if (validMatches.Count == 1)
+        {
+            selected = validMatches.First();
+            TkUtils.Logger.Warn($"Single valid match selected: {selected.Name} -> {selected.ColonistKindDef.defName}");
         }
         else
         {
-            kind = PawnKinds.Find(t => string.Equals(t.Name.ToToolkit(), input.ToToolkit(), StringComparison.InvariantCultureIgnoreCase));
+            // Multiple valid matches - use priority selection
+            selected = SelectBestPawnKind(validMatches, input);
+            TkUtils.Logger.Warn($"Multiple valid matches, selected: {selected.Name} -> {selected.ColonistKindDef.defName}");
         }
 
-        return kind != null;
+        kind = selected;
+        return true;
+    }
+
+    private static PawnKindItem SelectBestPawnKind(List<PawnKindItem> matches, string input)
+    {
+        // Priority 1: Exact name match with player colony faction
+        var playerColony = matches.FirstOrDefault(m =>
+            m.Name.Equals(input, StringComparison.OrdinalIgnoreCase) &&
+            m.ColonistKindDef?.defaultFactionDef == FactionDefOf.PlayerColony);
+
+        if (playerColony != null)
+        {
+            TkUtils.Logger.Warn("Selected: Player colony faction match");
+            return playerColony;
+        }
+
+        // Priority 2: Exact defName match
+        var defNameMatch = matches.FirstOrDefault(m =>
+            m.DefName.Equals(input, StringComparison.OrdinalIgnoreCase));
+
+        if (defNameMatch != null)
+        {
+            TkUtils.Logger.Warn("Selected: DefName match");
+            return defNameMatch;
+        }
+
+        // Priority 3: Any player colony faction
+        var anyPlayer = matches.FirstOrDefault(m =>
+            m.ColonistKindDef?.defaultFactionDef == FactionDefOf.PlayerColony);
+
+        if (anyPlayer != null)
+        {
+            TkUtils.Logger.Warn("Selected: Any player colony faction");
+            return anyPlayer;
+        }
+
+        // Priority 4: First valid match
+        TkUtils.Logger.Warn("Selected: First valid match (fallback)");
+        return matches.First();
     }
 }

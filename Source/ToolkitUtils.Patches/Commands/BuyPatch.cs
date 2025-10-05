@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// MODIFICATIONS © 2025 Captolamia: Updated for TwitchLib 3.4+, threading safety, and stability fixes
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
-using SirRandoo.ToolkitUtils.Helpers;
-using TwitchLib.Client.Models;
 using TwitchToolkit;
 using TwitchToolkit.Commands.ViewerCommands;
 using TwitchToolkit.Store;
@@ -58,35 +58,35 @@ internal static class BuyPatch
     private static bool Prefix(CommandDriver? __instance, TwitchMessageWrapper messageWrapper)
     {
         TkUtils.Logger.Debug($"=== BuyPatch.Prefix START ===");
-        TkUtils.Logger.Debug($"BuyPatch: Username = {messageWrapper.Username}");
-        TkUtils.Logger.Debug($"BuyPatch: Original message = '{messageWrapper.Message}'");
-        TkUtils.Logger.Debug($"BuyPatch: __instance type = {__instance?.GetType().Name}");
-        TkUtils.Logger.Debug($"BuyPatch: __instance.command.defName = {__instance?.command?.defName}");
-        TkUtils.Logger.Debug($"BuyPatch: __instance.command.command = {__instance?.command?.command}");
+        //TkUtils.Logger.Debug($"BuyPatch: Username = {messageWrapper.Username}");
+        //TkUtils.Logger.Debug($"BuyPatch: Original message = '{messageWrapper.Message}'");
+        //TkUtils.Logger.Debug($"BuyPatch: __instance type = {__instance?.GetType().Name}");
+        //TkUtils.Logger.Debug($"BuyPatch: __instance.command.defName = {__instance?.command?.defName}");
+        //TkUtils.Logger.Debug($"BuyPatch: __instance.command.command = {__instance?.command?.command}");
 
         if (__instance == null)
         {
             TkUtils.Logger.Error("BuyPatch: CommandDriver instance is null!");
-            TkUtils.Logger.Debug($"=== BuyPatch.Prefix END (null instance) ===");
+            //TkUtils.Logger.Debug($"=== BuyPatch.Prefix END (null instance) ===");
             return true;
         }
 
         if (!TkSettings.StoreState)
         {
-            TkUtils.Logger.Debug("BuyPatch: Store is disabled, skipping");
+            //TkUtils.Logger.Debug("BuyPatch: Store is disabled, skipping");
             TkUtils.Logger.Debug($"=== BuyPatch.Prefix END (store disabled) ===");
             return false;
         }
 
         Viewer viewer = Viewers.GetViewer(messageWrapper.Username);
-        TkUtils.Logger.Debug($"BuyPatch: Viewer found = {viewer?.username}");
-        TkUtils.Logger.Debug($"BuyPatch: Viewer coins = {viewer?.coins}");
+        //TkUtils.Logger.Debug($"BuyPatch: Viewer found = {viewer?.username}");
+        //TkUtils.Logger.Debug($"BuyPatch: Viewer coins = {viewer?.coins}");
 
         TwitchMessageWrapper processedMessage = messageWrapper;
 
         // Check if this is a shortcut command that needs to be converted to a buy command
         bool isShortcutCommand = !__instance.command.defName.Equals("Buy");
-        TkUtils.Logger.Debug($"BuyPatch: Is shortcut command? {isShortcutCommand}");
+        //kUtils.Logger.Debug($"BuyPatch: Is shortcut command? {isShortcutCommand}");
 
         if (isShortcutCommand)
         {
@@ -98,12 +98,12 @@ internal static class BuyPatch
 
         // Check if the message has enough segments for a purchase
         string[] messageSegments = processedMessage.Message.Split(' ');
-        TkUtils.Logger.Debug($"BuyPatch: Message segments count = {messageSegments.Length}");
-        TkUtils.Logger.Debug($"BuyPatch: Message segments = [{string.Join(", ", messageSegments)}]");
+        //TkUtils.Logger.Debug($"BuyPatch: Message segments count = {messageSegments.Length}");
+        //TkUtils.Logger.Debug($"BuyPatch: Message segments = [{string.Join(", ", messageSegments)}]");
 
         if (messageSegments.Length < 2)
         {
-            TkUtils.Logger.Debug("BuyPatch: Message has insufficient segments, skipping purchase");
+            //TkUtils.Logger.Debug("BuyPatch: Message has insufficient segments, skipping purchase");
             TkUtils.Logger.Debug($"=== BuyPatch.Prefix END (insufficient segments) ===");
             return false;
         }

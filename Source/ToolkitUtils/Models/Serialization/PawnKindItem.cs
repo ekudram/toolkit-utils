@@ -114,29 +114,83 @@ public class PawnKindItem : IShopItemBase
 
     internal void LoadGameData()
     {
+        TkUtils.Logger.Warn($"=== LoadGameData START ===");
+        TkUtils.Logger.Warn($"Processing pawn kind: Name='{Name}', DefName='{DefName}'");
+
         KindDefData? colonist = null;
         var container = new List<KindDefData>();
 
+        TkUtils.Logger.Warn($"Searching for PawnKindDefs with race defName='{DefName}' OR label/defName matching '{Name}'");
+
+        int foundCount = 0;
         foreach (PawnKindDef kindDef in DefDatabase<PawnKindDef>.AllDefs)
         {
-            if (!kindDef.race.defName.Equals(DefName))
+            bool isMatch = false;
+
+            // Strategy 1: Match by race defName (this is what we need for modded races)
+            if (kindDef.race?.defName?.Equals(DefName, StringComparison.OrdinalIgnoreCase) == true)
             {
-                continue;
+                TkUtils.Logger.Warn($"FOUND by race defName: {kindDef.defName} (race: {kindDef.race.defName})");
+                isMatch = true;
+            }
+            // Strategy 2: Match by PawnKindDef defName (for backward compatibility)
+            else if (kindDef.defName.Equals(DefName, StringComparison.OrdinalIgnoreCase))
+            {
+                TkUtils.Logger.Warn($"FOUND by pawnkind defName: {kindDef.defName}");
+                isMatch = true;
+            }
+            // Strategy 3: Match by label (case insensitive)
+            else if (kindDef.label?.Equals(Name, StringComparison.OrdinalIgnoreCase) == true)
+            {
+                TkUtils.Logger.Warn($"FOUND by label: {kindDef.defName} (label: {kindDef.label})");
+                isMatch = true;
             }
 
-            var data = new KindDefData { Name = kindDef.race.label.ToToolkit().ToLower(), Def = kindDef };
-            container.Add(data);
-
-            if (kindDef.defaultFactionDef == FactionDefOf.PlayerColony)
+            if (isMatch)
             {
-                colonist = data;
+                foundCount++;
+                ProcessFoundKindDef(kindDef, ref colonist, container);
             }
         }
 
-        colonist ??= container.First();
+        TkUtils.Logger.Warn($"Found {foundCount} matching PawnKindDefs");
+
+        if (container.Count == 0)
+        {
+            TkUtils.Logger.Error($"No PawnKindDef found for Name='{Name}', DefName='{DefName}'. This entry will not work!");
+            return;
+        }
+
+        colonist ??= container.FirstOrDefault();
+
+        if (colonist == null)
+        {
+            TkUtils.Logger.Error($"No colonist variant found for Name='{Name}', DefName='{DefName}'");
+            return;
+        }
+
         _colonistDef = colonist.Value;
-        Description = _colonistDef.Def.race.description;
+        Description = _colonistDef.Def.race?.description;
         _kinds = container.ToArray();
+
+        TkUtils.Logger.Warn($"LoadGameData COMPLETE: Name='{Name}', DefName='{DefName}', ColonistKindDef='{_colonistDef.Def.defName}'");
+        TkUtils.Logger.Warn($"=== LoadGameData END ====");
+    }
+
+    private void ProcessFoundKindDef(PawnKindDef kindDef, ref KindDefData? colonist, List<KindDefData> container)
+    {
+        var data = new KindDefData
+        {
+            Name = kindDef.race?.label?.ToToolkit()?.ToLower() ?? "UNKNOWN",
+            Def = kindDef
+        };
+        container.Add(data);
+
+        if (kindDef.defaultFactionDef == FactionDefOf.PlayerColony)
+        {
+            colonist = data;
+            TkUtils.Logger.Warn($"SELECTED AS COLONIST: {kindDef.defName}");
+        }
     }
 
     public string? GetDefaultName() => _colonistDef.Name ?? DefName;

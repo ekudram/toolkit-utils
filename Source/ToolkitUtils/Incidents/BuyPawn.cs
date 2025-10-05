@@ -16,14 +16,15 @@
 
 // MODIFICATIONS © 2025 Captolamia: Updated for TwitchLib 3.4+, threading safety, and stability fixes
 
-using System;
-using System.Linq;
 using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Interfaces;
 using SirRandoo.ToolkitUtils.Models;
 using SirRandoo.ToolkitUtils.Utils;
 using SirRandoo.ToolkitUtils.Workers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using ToolkitCore.Utilities;
 using TwitchToolkit;
 using TwitchToolkit.PawnQueue;
@@ -48,6 +49,7 @@ public class BuyPawn : IncidentVariablesBase
     /// </summary>
     public override bool CanHappen(string msg, Viewer viewer)
     {
+        TkUtils.Logger.Warn("CanHappen to spawn a viewer pawn!");
         // 1. Check if user already has pawn
         if (CommandBase.GetOrFindPawn(viewer.username) != null)
         {
@@ -72,26 +74,131 @@ public class BuyPawn : IncidentVariablesBase
 
         // 4. Get default pawn kind (usually human)
         GetDefaultKind();
-        TkUtils.Logger.Debug("GetDefaultKind: " + _pawnKindItem);
+        TkUtils.Logger.Warn("GetDefaultKind: _pawnKindItem " + _pawnKindItem);
+        TkUtils.Logger.Warn("GetDefaultKind: _kindDef " + _kindDef);
+
+        // In your BuyPawn.CanHappen method, after GetDefaultKind():
+        TkUtils.Logger.Warn("=== ALL PAWN KINDS ===");
+        foreach (var kind in Data.PawnKinds)
+        {
+            TkUtils.Logger.Warn($"Name: '{kind.Name}', DefName: '{kind.DefName}', Enabled: {kind.Enabled}");
+        }
+        TkUtils.Logger.Warn("=====================");
 
         var worker = ArgWorker.CreateInstance(CommandFilter.Parse(msg).Skip(2));
+
+        // Handle human pawn requests (explicit "human" or default with no arguments)
+        bool wantsHuman = false;
+        string firstArg = null;
+
+        if (worker.HasNext())
+        {
+            firstArg = worker.GetNext();
+            wantsHuman = firstArg.Equals("human", StringComparison.OrdinalIgnoreCase);
+        }
+        else
+        {
+            // No arguments specified - default to human
+            wantsHuman = true;
+            TkUtils.Logger.Warn("No pawn kind specified, defaulting to human");
+        }
+
+        if (wantsHuman)
+        {
+            TkUtils.Logger.Warn("Using human pawn");
+            _kindDef = RimWorld.PawnKindDefOf.Colonist;
+
+            // Process xenotype if specified (only if we had a first argument)
+            if (firstArg != null && ModsConfig.BiotechActive && worker.HasNext())
+            {
+                string xenotypeInput = worker.GetNext();
+                if (!xenotypeInput.NullOrEmpty())
+                {
+                    _xenotypeDef = DefDatabase<XenotypeDef>.AllDefs.FirstOrDefault(
+                        x => x.defName.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase) ||
+                             x.label.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase));
+
+                    if (_xenotypeDef == null)
+                    {
+                        MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
+                        return false;
+                    }
+                    TkUtils.Logger.Warn("Xenotype set to: " + _xenotypeDef.defName);
+                }
+            }
+
+            // Use default cost for human
+            TkUtils.Logger.Warn("Final selection - Human colonist with xenotype: " + (_xenotypeDef?.defName ?? "None"));
+            return viewer.CanAfford(_pawnKindItem?.Cost ?? 1);
+        }
 
         // 5. Process pawn kind (if PurchasePawnKinds is enabled)
         if (TkSettings.PurchasePawnKinds)
         {
-            if (worker.TryGetNextAsPawn(out PawnKindItem temp) && temp?.ColonistKindDef != null)
+            TkUtils.Logger.Warn($"PurchasePawnKinds enabled, checking for pawn kind input...");
+
+            // Check if we have pawn input using the original worker state
+            var workerForPawnCheck = ArgWorker.CreateInstance(CommandFilter.Parse(msg).Skip(2));
+
+            if (workerForPawnCheck.HasNext())
             {
-                _pawnKindItem = temp;
-                _kindDef = _pawnKindItem.ColonistKindDef;
-                TkUtils.Logger.Debug("Processed to kind: " + _pawnKindItem);
+                string pawnInput = workerForPawnCheck.GetNext();
+                TkUtils.Logger.Warn($"Processing pawn kind input: '{pawnInput}'");
+
+                // Find ALL matching PawnKindDefs and select the best one
+                List<PawnKindDef> allMatches = new List<PawnKindDef>();
+
+                if (Data.TryGetPawnKind(pawnInput, out var pawnKindItem) && pawnKindItem?.DefName != null)
+                {
+                    TkUtils.Logger.Warn($"Found data entry: Name='{pawnKindItem.Name}', DefName='{pawnKindItem.DefName}'");
+
+                    // Search for PawnKindDefs that match the race defName from our data
+                    allMatches = DefDatabase<PawnKindDef>.AllDefs.Where(pk =>
+                        pk.RaceProps.Humanlike &&
+                        pk.race?.defName?.Equals(pawnKindItem.DefName, StringComparison.OrdinalIgnoreCase) == true).ToList();
+                }
+                else
+                {
+                    // Fallback to original search
+                    allMatches = DefDatabase<PawnKindDef>.AllDefs.Where(pk =>
+                        pk.RaceProps.Humanlike &&
+                        (pk.defName.Equals(pawnInput, StringComparison.OrdinalIgnoreCase) ||
+                         pk.label?.Equals(pawnInput, StringComparison.OrdinalIgnoreCase) == true ||
+                         pk.race?.defName?.Equals(pawnInput, StringComparison.OrdinalIgnoreCase) == true)).ToList();
+                }
+
+                if (allMatches.Count > 0)
+                {
+                    TkUtils.Logger.Warn($"Found {allMatches.Count} matching PawnKindDefs for '{pawnInput}'");
+
+                    // Select the best PawnKindDef using priority logic
+                    _kindDef = SelectBestPawnKindDef(allMatches, pawnInput);
+                    TkUtils.Logger.Warn($"Selected PawnKindDef: {_kindDef.defName} for input '{pawnInput}'");
+
+                    // Try to find the corresponding PawnKindItem from data using the actual input
+                    if (Data.TryGetPawnKind(pawnInput, out _pawnKindItem))
+                    {
+                        TkUtils.Logger.Warn($"Found PawnKindItem for '{pawnInput}'");
+                    }
+                    else
+                    {
+                        TkUtils.Logger.Warn($"No PawnKindItem found for '{pawnInput}', using default costing");
+                        GetDefaultKind();
+                    }
+                }
+                else
+                {
+                    TkUtils.Logger.Warn($"No valid PawnKindDef found for: '{pawnInput}'");
+                    MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidKindQuery".LocalizeKeyed(pawnInput));
+                    return false;
+                }
             }
-            else if (!worker.GetLast().NullOrEmpty())
+            else
             {
-                // Invalid pawn kind specified
-                MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidKindQuery".LocalizeKeyed(worker.GetLast()));
+                TkUtils.Logger.Warn($"No valid PawnKindDef found");
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidKindQuery");
                 return false;
             }
-            // else: no pawn kind specified, use default
         }
 
         // 6. Process xenotype (optional, only if Biotech is active)
@@ -109,7 +216,7 @@ public class BuyPawn : IncidentVariablesBase
                     MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
                     return false; // Invalid xenotype specified, fail purchase
                 }
-                TkUtils.Logger.Debug("Xenotype set to: " + _xenotypeDef.defName);
+                TkUtils.Logger.Warn("Xenotype set to: " + _xenotypeDef.defName);
             }
             // else: xenotype input was empty, ignore it
         }
@@ -120,39 +227,11 @@ public class BuyPawn : IncidentVariablesBase
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.BuyPawn.Humanlike".Localize());
             return false;
         }
-        TkUtils.Logger.Debug($"Final selection - PawnKind: {_kindDef?.defName}, Xenotype: {_xenotypeDef?.defName ?? "None"}");
+        TkUtils.Logger.Warn($"Final selection - PawnKind: {_kindDef?.defName}, Xenotype: {_xenotypeDef?.defName ?? "None"}");
         // 8. Check if purchase is allowed
         return CanPurchaseRace(viewer, _pawnKindItem);
     }
 
-    /// <summary>
-    /// Processes xenotype from command arguments if Biotech is active
-    /// </summary>
-    private bool TryProcessXenotype(ArgWorker worker, Viewer viewer)
-    {
-        if (!ModsConfig.BiotechActive || !worker.HasNext())
-        {
-            return true; // No xenotype to process, but that's fine
-        }
-
-        string xenotypeInput = worker.GetNext();
-        if (!xenotypeInput.NullOrEmpty())
-        {
-            _xenotypeDef = DefDatabase<XenotypeDef>.AllDefs.FirstOrDefault(
-                x => x.defName.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase) ||
-                     x.label.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase));
-
-            if (_xenotypeDef == null)
-            {
-                MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
-                return false;
-            }
-
-            TkUtils.Logger.Debug($"Xenotype set to: {_xenotypeDef.defName}");
-        }
-
-        return true;
-    }
     /// <summary>
     /// Excutes the command...
     /// </summary>
@@ -237,11 +316,13 @@ public class BuyPawn : IncidentVariablesBase
     /// </summary>
     private void GetDefaultKind()
     {
-        if (Data.TryGetPawnKind($"${RimWorld.PawnKindDefOf.Colonist.race.defName}", out PawnKindItem human) && (human!.Enabled || !TkSettings.PurchasePawnKinds))
+        TkUtils.Logger.Warn("=== GetDefaultKind START ===");
+    
+        if (Data.TryGetPawnKind($"{RimWorld.PawnKindDefOf.Colonist.race.defName}", out PawnKindItem human) && (human!.Enabled || !TkSettings.PurchasePawnKinds))
         {
             _kindDef = RimWorld.PawnKindDefOf.Colonist;
             _pawnKindItem = human;
-
+            TkUtils.Logger.Warn($"GetDefaultKind: Using human colonist -> {_pawnKindItem.Name}");
             return;
         }
 
@@ -256,5 +337,92 @@ public class BuyPawn : IncidentVariablesBase
 
         _kindDef = randomKind.ColonistKindDef;
         _pawnKindItem = randomKind;
+
+        TkUtils.Logger.Warn("GetDefaultKind: Using RimWorld.PawnKindDefOf.Colonist as fallback");
+        TkUtils.Logger.Warn("=== GetDefaultKind END ===");
+    }
+
+    /// <summary>
+    /// Checks for all Valid PawnKindDef returns best matches for Player or Colonist
+    /// Avoids certian types if possible
+    /// Defaults First match (fallback)
+    /// </summary>
+    /// <param name="matches"></param>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    private PawnKindDef SelectBestPawnKindDef(List<PawnKindDef> matches, string input)
+    {
+
+        TkUtils.Logger.Warn($"=== SelectBestPawnKindDef START ===");
+        TkUtils.Logger.Warn($"Input: '{input}', Found {matches.Count} matches:");
+
+
+
+        foreach (var match in matches)
+        {
+            TkUtils.Logger.Warn($"  - {match.defName}, Faction: {match.defaultFactionDef?.defName ?? "NULL"}");
+        }
+
+        // Priority 1: DefName contains "PlayerColonist" or "Colonist"
+        var colonistMatch = matches.FirstOrDefault(pk =>
+            pk.defName.Contains("Player") ||
+            pk.defName.Contains("PlayerColonist") ||
+            pk.defName.Contains("Colonist") ||
+            (pk.defName.Contains("Player") && pk.defName.Contains("Colonist")));
+        if (colonistMatch != null)
+        {
+            TkUtils.Logger.Warn($"Selected Priority 1: {colonistMatch.defName} - Contains 'PlayerColonist' or 'Colonist'");
+            return colonistMatch;
+        }
+        else
+        {
+            TkUtils.Logger.Warn("Priority 1: No match with 'PlayerColonist' or 'Colonist'");
+        }
+
+        // Priority 2: Default faction is PlayerColony
+        var playerFactionMatch = matches.FirstOrDefault(pk =>
+            pk.defaultFactionDef == FactionDefOf.PlayerColony);
+        if (playerFactionMatch != null)
+        {
+            TkUtils.Logger.Warn($"Selected Priority 2: {playerFactionMatch.defName} - Player colony faction");
+            return playerFactionMatch;
+        }
+        else
+        {
+            TkUtils.Logger.Warn("Priority 2: No match with PlayerColony faction");
+        }
+
+        // Priority 3: DefName contains "Player"
+        var playerMatch = matches.FirstOrDefault(pk => pk.defName.Contains("Player"));
+        if (playerMatch != null)
+        {
+            TkUtils.Logger.Warn($"Selected Priority 3: {playerMatch.defName} - Contains 'Player'");
+            return playerMatch;
+        }
+        else
+        {
+            TkUtils.Logger.Warn("Priority 3: No match containing 'Player'");
+        }
+
+        // Priority 4: Not a corpse, crypto, or other special type
+        var nonSpecialMatch = matches.FirstOrDefault(pk =>
+            !pk.defName.Contains("Corpse") &&
+            !pk.defName.Contains("Crypto") &&
+            !pk.defName.Contains("Slave") &&
+            !pk.defName.Contains("Refugee"));
+        if (nonSpecialMatch != null)
+        {
+            TkUtils.Logger.Warn($"Selected Priority 4: {nonSpecialMatch.defName} - Non-special type");
+            return nonSpecialMatch;
+        }
+        else
+        {
+            TkUtils.Logger.Warn("Priority 4: No non-special matches found");
+        }
+
+        // Priority 5: First match (fallback)
+        TkUtils.Logger.Warn($"Selected Priority 5 (fallback): {matches.First().defName} - First match");
+        TkUtils.Logger.Warn($"=== SelectBestPawnKindDef END ===");
+        return matches.First();
     }
 }
