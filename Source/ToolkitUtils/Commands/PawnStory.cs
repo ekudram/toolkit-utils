@@ -40,6 +40,16 @@ public class PawnStory : CommandBase
 
         var parts = new List<string?> { $"{"Backstory".Localize()}: {pawn!.story.AllBackstories.Select(b => b.title.CapitalizeFirst()).SectionJoin()}" };
 
+        // Add Xenotype information if available
+        if (ModsConfig.BiotechActive && pawn.genes != null)
+        {
+            if (pawn.genes.Xenotype != null && !pawn.genes.Xenotype.defName.Equals("Baseliner"))
+            {
+                string xenotypeName = pawn.genes.XenotypeLabelCap;
+                parts.Add($"{"Xenotype".Localize()}: {xenotypeName}");
+            }
+        }
+
         if (!pawn.story.title.NullOrEmpty())
         {
             parts.Add(pawn.story.TitleCap);
@@ -50,20 +60,31 @@ public class PawnStory : CommandBase
         switch (pawn.gender)
         {
             case Gender.Female:
-                parts.Add((isRoyal ? ResponseHelper.PrincessGlyph : ResponseHelper.FemaleGlyph).AltText("Female".Localize().CapitalizeFirst()));
-
+                if (isRoyal)
+                {
+                    parts.Add(ResponseHelper.PrincessGlyph.AltText("Princess".Localize().CapitalizeFirst()));
+                }
+                parts.Add(ResponseHelper.FemaleGlyph.AltText("Female".Localize().CapitalizeFirst()));
                 break;
             case Gender.Male:
-                parts.Add((isRoyal ? ResponseHelper.PrinceGlyph : ResponseHelper.MaleGlyph).AltText("Male".Localize().CapitalizeFirst()));
-
+                if (isRoyal)
+                {
+                    parts.Add(ResponseHelper.PrinceGlyph.AltText("Prince".Localize().CapitalizeFirst()));
+                }
+                parts.Add(ResponseHelper.MaleGlyph.AltText("Male".Localize().CapitalizeFirst()));
                 break;
             case Gender.None:
-                parts.Add((isRoyal ? ResponseHelper.CrownGlyph : ResponseHelper.GenderlessGlyph).AltText("NoneLower".Localize().CapitalizeFirst()));
-
+                if (isRoyal)
+                {
+                    parts.Add(ResponseHelper.CrownGlyph.AltText("Royal".Localize().CapitalizeFirst()));
+                }
+                parts.Add(ResponseHelper.GenderlessGlyph.AltText("NoneLower".Localize().CapitalizeFirst()));
                 break;
             default:
-                parts.Add(isRoyal ? ResponseHelper.CrownGlyph : "");
-
+                if (isRoyal)
+                {
+                    parts.Add(ResponseHelper.CrownGlyph.AltText("Royal".Localize().CapitalizeFirst()));
+                }
                 break;
         }
 

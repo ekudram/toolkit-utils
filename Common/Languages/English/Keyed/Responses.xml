@@ -31,4 +31,7 @@
     
     <!-- Name Queue -->
     <TKUtils.ViewerDrawn>You've been picked from the name queue! Respond in chat so you can claim the current pawn.</TKUtils.ViewerDrawn>
+  
+    <!-- Buy Pawn -->
+  <TKUtils.InvalidKindQuery>Xenotype not availible, check spelling.</TKUtils.InvalidKindQuery>
 </LanguageData>

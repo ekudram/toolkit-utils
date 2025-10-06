@@ -120,7 +120,7 @@ public class BuyPawn : IncidentVariablesBase
 
                     if (_xenotypeDef == null)
                     {
-                        MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
+                        MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed());
                         return false;
                     }
                     TkUtils.Logger.Warn("Xenotype set to: " + _xenotypeDef.defName);
@@ -189,14 +189,14 @@ public class BuyPawn : IncidentVariablesBase
                 else
                 {
                     TkUtils.Logger.Warn($"No valid PawnKindDef found for: '{pawnInput}'");
-                    MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidKindQuery".LocalizeKeyed(pawnInput));
+                    MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidKindQuery".LocalizeKeyed());
                     return false;
                 }
             }
             else
             {
                 TkUtils.Logger.Warn($"No valid PawnKindDef found");
-                MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidKindQuery");
+                MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidKindQuery".LocalizeKeyed());
                 return false;
             }
         }
@@ -213,7 +213,7 @@ public class BuyPawn : IncidentVariablesBase
 
                 if (_xenotypeDef == null)
                 {
-                    MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
+                    MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed());
                     return false; // Invalid xenotype specified, fail purchase
                 }
                 TkUtils.Logger.Warn("Xenotype set to: " + _xenotypeDef.defName);
