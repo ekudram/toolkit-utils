@@ -61,11 +61,15 @@ public class CoreMainTab : MainTabWindow_ToolkitCore
     private string? _secondsText;
     private Vector2? _tabSize;
     private string? _warningTooltip;
-
+    /// <summary>
+    /// Initializes the static members of the <see cref="CoreMainTab"/> class.
+    /// </summary>
+    /// <remarks>This static constructor processes all registered toolkit addons, creating menu entries for
+    /// each. If any addons fail to initialize their menus, a warning message is logged, detailing the errors.</remarks>
     static CoreMainTab()
     {
         var builder = new StringBuilder();
-
+        // Process all registered addons, creating menu entries for each.
         foreach (ToolkitAddon addon in AddonRegistry.ToolkitAddons)
         {
             var cache = MenuEntry.CreateInstance(addon, out string? error);
@@ -77,16 +81,18 @@ public class CoreMainTab : MainTabWindow_ToolkitCore
 
             MenuCaches.Add(cache);
         }
-
+        // If no menus were cached, exit early.
         if (builder.Length <= 0)
         {
             return;
         }
-
+        // If any addons failed to initialize their menus, log a warning message.
         builder.Insert(0, "The following addon menus could not reliably be opened by the user:\n");
         TkUtils.Logger.Warn(builder.ToString());
     }
-
+    /// <summary>
+    /// Gets the preferred size of the tab, including its width and height, based on the current content and layout.
+    /// </summary>
     public override Vector2 RequestedTabSize
     {
         get
@@ -96,7 +102,12 @@ public class CoreMainTab : MainTabWindow_ToolkitCore
             return _tabSize ??= new Vector2(550f, Mathf.Max(150.0f, MenuCaches.Count * _buttonHeight) + Text.SmallFontHeight + Margin * 2f);
         }
     }
-
+    /// <summary>
+    /// Performs post-initialization tasks after the object is opened, setting up localized text and tooltips.
+    /// </summary>
+    /// <remarks>This method initializes various localized strings used for displaying text and tooltips in
+    /// the user interface. It should be called after the object is opened to ensure that all necessary resources are
+    /// properly localized.</remarks>
     public override void PostOpen()
     {
         _secondsText = "TKUtils.Fields.Seconds".Localize();
@@ -111,7 +122,14 @@ public class CoreMainTab : MainTabWindow_ToolkitCore
         _debugTooltip = "TKUtils.MainTabTooltips.Debug".Localize();
         _errorTooltip = "TKUtils.MainTabTooltips.Error".Localize();
     }
-
+    /// <summary>
+    /// Renders the contents of the window within the specified rectangular area.
+    /// </summary>
+    /// <remarks>This method divides the specified area into two columns and renders the left and right
+    /// sections using <see cref="DrawLeftColumn"/> and <see cref="DrawRightColumn"/>, respectively. A vertical line is
+    /// drawn between the columns for visual separation. The method ensures that the font used during rendering is
+    /// restored to its original state after execution.</remarks>
+    /// <param name="inRect">The rectangle defining the area in which the window contents should be drawn.</param>
     public override void DoWindowContents(Rect inRect)
     {
         GameFont cache = Text.Font;
@@ -136,7 +154,14 @@ public class CoreMainTab : MainTabWindow_ToolkitCore
 
         Text.Font = cache;
     }
-
+    /// <summary>
+    /// Renders the left column of the user interface, displaying health reports or a placeholder message if no reports
+    /// are available.
+    /// </summary>
+    /// <remarks>The method begins by drawing a title at the top of the specified region. If no health reports
+    /// are available, a placeholder message is displayed in the center of the column. Otherwise, the health reports are
+    /// rendered within the remaining space of the column.</remarks>
+    /// <param name="region">The rectangular area within which the left column is drawn.</param>
     private void DrawLeftColumn(Rect region)
     {
         var titleRect = new Rect(0f, 0f, region.width, Text.SmallFontHeight);
@@ -165,7 +190,15 @@ public class CoreMainTab : MainTabWindow_ToolkitCore
 
         GUI.EndGroup();
     }
-
+    /// <summary>
+    /// Renders a scrollable list of health reports within the specified region.
+    /// </summary>
+    /// <remarks>This method displays all health reports contained in the <see cref="Data.AllHealthReports"/>
+    /// collection. Each report is rendered with alternating background styles for visual distinction. If a report's
+    /// height has not been calculated, it is determined dynamically based on the message content and the available
+    /// width.  The method ensures that only the visible portion of the reports is drawn to optimize performance. If a
+    /// health report is removed during rendering, the operation gracefully handles the exception.</remarks>
+    /// <param name="region">The rectangular area on the screen where the health reports will be drawn.</param>
     private void DrawHealthReports(Rect region)
     {
         var viewRect = new Rect(0f, 0f, region.width - 16f, Data.AllHealthReports.Sum(r => r.Height));
@@ -206,7 +239,12 @@ public class CoreMainTab : MainTabWindow_ToolkitCore
 
         GUI.EndScrollView();
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="region"></param>
+    /// <param name="report"></param>
+    /// <param name="alternate"></param>
     private void DrawHealthReport(Rect region, HealthReport report, bool alternate = false)
     {
         var iconRect = new Rect(0f, 0f, 16f, region.height);
@@ -252,7 +290,11 @@ public class CoreMainTab : MainTabWindow_ToolkitCore
             Data.RemoveHealthReport(report);
         }
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="reportType"></param>
+    /// <returns></returns>
     private static Texture2D GetTextureFor(HealthReport.ReportType reportType)
     {
         switch (reportType)
@@ -268,7 +310,11 @@ public class CoreMainTab : MainTabWindow_ToolkitCore
                 return Textures.QuestionMark;
         }
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="reportType"></param>
+    /// <returns></returns>
     private static Color GetColorFor(HealthReport.ReportType reportType)
     {
         switch (reportType)

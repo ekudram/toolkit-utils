@@ -95,41 +95,24 @@ public static class CompatRegistry
     /// <param name="type">The <see cref="Type"/> to process. Must represent a class that can be instantiated.</param>
     internal static void ProcessType(Type type)
     {
-        TkUtils.Logger.Debug($"Processing type for compatibility: {type.FullName}");
-
+        // TkUtils.Logger.Debug($"Processing type for compatibility: {type.FullName}");
+        /// Check if the type implements ICompatibilityProvider
         if (Activator.CreateInstance(type) is not ICompatibilityProvider provider)
         {
             TkUtils.Logger.Warn($"Type {type.FullName} is not an ICompatibilityProvider");
             return;
         }
-
-        TkUtils.Logger.Debug($"Found provider: {provider.GetType().FullName} with ModId: {provider.ModId}");
-
+        // TkUtils.Logger.Debug($"Found provider: {provider.GetType().FullName} with ModId: {provider.ModId}");
         bool dependencyLoaded = provider.ModId.StartsWith("Ludeon")
             ? ModLister.GetExpansionWithIdentifier(provider.ModId)?.Status == ExpansionStatus.Active
             : ModLister.GetActiveModWithIdentifier(provider.ModId) != null;
-
-        TkUtils.Logger.Debug($"Dependency loaded for {provider.ModId}: {dependencyLoaded}");
-
+        // TkUtils.Logger.Debug($"Dependency loaded for {provider.ModId}: {dependencyLoaded}");
         if (!dependencyLoaded)
         {
             TkUtils.Logger.Warn($"Skipping registration of provider {provider.GetType().FullName} as its dependency {provider.ModId} is not loaded.");
             return;
         }
-
         RegisterAndCatalogue(provider);
-    }
-    /// <summary>
-    /// Registers an alien compatibility provider to be used by the system.
-    /// </summary>
-    /// <remarks>The registered provider will be used to handle alien compatibility operations.  Only one
-    /// provider can be registered at a time, and calling this method will replace any previously registered
-    /// provider.</remarks>
-    /// <param name="provider">The alien compatibility provider to register. This parameter cannot be <see langword="null"/>.</param>
-    internal static void RegisterAlienProvider(IAlienCompatibilityProvider provider)
-    {
-        Alien = provider;
-        TkUtils.Logger.Debug($"Registered alien provider: {provider.GetType().FullName}");
     }
     /// <summary>
     /// Registers a compatibility provider and categorizes it into the appropriate handler collection based on its type.
@@ -145,9 +128,9 @@ public static class CompatRegistry
     private static void RegisterAndCatalogue(ICompatibilityProvider provider)
     {
         TkUtils.Logger.Debug($"Registering compatibility provider: {provider.GetType().FullName}");
-
+        /// Add to the general compatibility providers list
         CompatibilityProviders.Add(provider);
-
+        /// Categorize into specific handler collections
         switch (provider)
         {
             case ISurgeryHandler surgery:
@@ -176,7 +159,6 @@ public static class CompatRegistry
                 break;
         }
     }
-
     /// <summary>
     ///     Returns whether a hediff should be healed.
     /// </summary>
@@ -189,14 +171,11 @@ public static class CompatRegistry
             if (!handler.CanHeal(hediff))
             {
                 TkUtils.Logger.Info($"The handler {handler.GetType().FullDescription()} requested that the hediff {hediff.def.defName} not be healed.");
-
                 return false;
             }
         }
-
         return true;
     }
-
     /// <summary>
     ///     Returns whether a body part record should be healed.
     /// </summary>
@@ -209,11 +188,9 @@ public static class CompatRegistry
             if (!handler.CanHeal(record))
             {
                 TkUtils.Logger.Info($"The handler {handler.GetType().FullDescription()} requested that the body part {record.def.defName} not be healed.");
-
                 return false;
             }
         }
-
         return true;
     }
 }

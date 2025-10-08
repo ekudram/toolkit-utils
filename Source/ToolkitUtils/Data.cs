@@ -51,7 +51,9 @@ public static partial class Data
     internal static readonly EnumRegistrar<Gender> Genders = new EnumRegistrar<Gender>();
     internal static readonly EnumRegistrar<TechLevel> TechLevels = new EnumRegistrar<TechLevel>();
     internal static readonly EnumRegistrar<ComparisonTypes> ComparisonTypes = new EnumRegistrar<ComparisonTypes>();
-
+    /// <summary>
+    /// 
+    /// </summary>
     static Data()
     {
         // Just something to ensure the DomainIndexer's static constructor runs before
@@ -97,7 +99,9 @@ public static partial class Data
             DumpAllData();
         }
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     private static void ValidateViewerData()
     {
         var toDelete = new List<Viewer>();
@@ -119,7 +123,9 @@ public static partial class Data
 
         TwitchToolkit.Viewers.All.RemoveAll(v => v == null || toDelete.Contains(v));
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     private static void ValidateData()
     {
         try

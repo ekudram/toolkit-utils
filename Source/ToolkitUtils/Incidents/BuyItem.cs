@@ -34,7 +34,7 @@ namespace SirRandoo.ToolkitUtils.Incidents;
 
 public class BuyItem : IncidentVariablesBase
 {
-    private PurchaseRequest _purchaseRequest;
+    private PurchaseRequest? _purchaseRequest;
 
     public override bool CanHappen(string msg, Viewer viewer)
     {

@@ -74,16 +74,14 @@ public class BuyPawn : IncidentVariablesBase
 
         // 4. Get default pawn kind (usually human)
         GetDefaultKind();
-        TkUtils.Logger.Warn("GetDefaultKind: _pawnKindItem " + _pawnKindItem);
-        TkUtils.Logger.Warn("GetDefaultKind: _kindDef " + _kindDef);
-
-        // In your BuyPawn.CanHappen method, after GetDefaultKind():
-        TkUtils.Logger.Warn("=== ALL PAWN KINDS ===");
-        foreach (var kind in Data.PawnKinds)
-        {
-            TkUtils.Logger.Warn($"Name: '{kind.Name}', DefName: '{kind.DefName}', Enabled: {kind.Enabled}");
-        }
-        TkUtils.Logger.Warn("=====================");
+        //TkUtils.Logger.Warn("GetDefaultKind: _pawnKindItem " + _pawnKindItem);
+        //TkUtils.Logger.Warn("GetDefaultKind: _kindDef " + _kindDef);
+        //TkUtils.Logger.Warn("=== ALL PAWN KINDS ===");
+        //foreach (var kind in Data.PawnKinds)
+        //{
+        //    TkUtils.Logger.Warn($"Name: '{kind.Name}', DefName: '{kind.DefName}', Enabled: {kind.Enabled}");
+        //}
+        //TkUtils.Logger.Warn("=====================");
 
         var worker = ArgWorker.CreateInstance(CommandFilter.Parse(msg).Skip(2));
 
@@ -105,7 +103,7 @@ public class BuyPawn : IncidentVariablesBase
 
         if (wantsHuman)
         {
-            TkUtils.Logger.Warn("Using human pawn");
+            //TkUtils.Logger.Warn("Using human pawn");
             _kindDef = RimWorld.PawnKindDefOf.Colonist;
 
             // Process xenotype if specified (only if we had a first argument)
@@ -123,7 +121,7 @@ public class BuyPawn : IncidentVariablesBase
                         MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed());
                         return false;
                     }
-                    TkUtils.Logger.Warn("Xenotype set to: " + _xenotypeDef.defName);
+                    //TkUtils.Logger.Warn("Xenotype set to: " + _xenotypeDef.defName);
                 }
             }
 
@@ -135,7 +133,7 @@ public class BuyPawn : IncidentVariablesBase
         // 5. Process pawn kind (if PurchasePawnKinds is enabled)
         if (TkSettings.PurchasePawnKinds)
         {
-            TkUtils.Logger.Warn($"PurchasePawnKinds enabled, checking for pawn kind input...");
+            //TkUtils.Logger.Warn($"PurchasePawnKinds enabled, checking for pawn kind input...");
 
             // Check if we have pawn input using the original worker state
             var workerForPawnCheck = ArgWorker.CreateInstance(CommandFilter.Parse(msg).Skip(2));
@@ -143,14 +141,14 @@ public class BuyPawn : IncidentVariablesBase
             if (workerForPawnCheck.HasNext())
             {
                 string pawnInput = workerForPawnCheck.GetNext();
-                TkUtils.Logger.Warn($"Processing pawn kind input: '{pawnInput}'");
+                //TkUtils.Logger.Warn($"Processing pawn kind input: '{pawnInput}'");
 
                 // Find ALL matching PawnKindDefs and select the best one
                 List<PawnKindDef> allMatches = new List<PawnKindDef>();
 
                 if (Data.TryGetPawnKind(pawnInput, out var pawnKindItem) && pawnKindItem?.DefName != null)
                 {
-                    TkUtils.Logger.Warn($"Found data entry: Name='{pawnKindItem.Name}', DefName='{pawnKindItem.DefName}'");
+                    //TkUtils.Logger.Warn($"Found data entry: Name='{pawnKindItem.Name}', DefName='{pawnKindItem.DefName}'");
 
                     // Search for PawnKindDefs that match the race defName from our data
                     allMatches = DefDatabase<PawnKindDef>.AllDefs.Where(pk =>
@@ -169,20 +167,20 @@ public class BuyPawn : IncidentVariablesBase
 
                 if (allMatches.Count > 0)
                 {
-                    TkUtils.Logger.Warn($"Found {allMatches.Count} matching PawnKindDefs for '{pawnInput}'");
+                    //TkUtils.Logger.Warn($"Found {allMatches.Count} matching PawnKindDefs for '{pawnInput}'");
 
                     // Select the best PawnKindDef using priority logic
                     _kindDef = SelectBestPawnKindDef(allMatches, pawnInput);
-                    TkUtils.Logger.Warn($"Selected PawnKindDef: {_kindDef.defName} for input '{pawnInput}'");
+                    //TkUtils.Logger.Warn($"Selected PawnKindDef: {_kindDef.defName} for input '{pawnInput}'");
 
                     // Try to find the corresponding PawnKindItem from data using the actual input
                     if (Data.TryGetPawnKind(pawnInput, out _pawnKindItem))
                     {
-                        TkUtils.Logger.Warn($"Found PawnKindItem for '{pawnInput}'");
+                        //TkUtils.Logger.Warn($"Found PawnKindItem for '{pawnInput}'");
                     }
                     else
                     {
-                        TkUtils.Logger.Warn($"No PawnKindItem found for '{pawnInput}', using default costing");
+                        //TkUtils.Logger.Warn($"No PawnKindItem found for '{pawnInput}', using default costing");
                         GetDefaultKind();
                     }
                 }
@@ -220,7 +218,7 @@ public class BuyPawn : IncidentVariablesBase
                     MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
                     return false;
                 }
-                TkUtils.Logger.Warn("Xenotype set to: " + _xenotypeDef.defName);
+                //TkUtils.Logger.Warn("Xenotype set to: " + _xenotypeDef.defName);
             }
         }
 
@@ -230,7 +228,7 @@ public class BuyPawn : IncidentVariablesBase
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.BuyPawn.Humanlike".Localize());
             return false;
         }
-        TkUtils.Logger.Warn($"Final selection - PawnKind: {_kindDef?.defName}, Xenotype: {_xenotypeDef?.defName ?? "None"}");
+        TkUtils.Logger.Debug($"Final selection - PawnKind: {_kindDef?.defName}, Xenotype: {_xenotypeDef?.defName ?? "None"}");
         // 8. Check if purchase is allowed
         return CanPurchaseRace(viewer, _pawnKindItem);
     }
@@ -319,8 +317,6 @@ public class BuyPawn : IncidentVariablesBase
     /// </summary>
     private void GetDefaultKind()
     {
-        TkUtils.Logger.Warn("=== GetDefaultKind START ===");
-    
         if (Data.TryGetPawnKind($"{RimWorld.PawnKindDefOf.Colonist.race.defName}", out PawnKindItem human) && (human!.Enabled || !TkSettings.PurchasePawnKinds))
         {
             _kindDef = RimWorld.PawnKindDefOf.Colonist;
@@ -337,14 +333,9 @@ public class BuyPawn : IncidentVariablesBase
 
             return;
         }
-
         _kindDef = randomKind.ColonistKindDef;
         _pawnKindItem = randomKind;
-
-        TkUtils.Logger.Warn("GetDefaultKind: Using RimWorld.PawnKindDefOf.Colonist as fallback");
-        TkUtils.Logger.Warn("=== GetDefaultKind END ===");
     }
-
     /// <summary>
     /// Checks for all Valid PawnKindDef returns best matches for Player or Colonist
     /// Avoids certian types if possible
@@ -355,12 +346,8 @@ public class BuyPawn : IncidentVariablesBase
     /// <returns></returns>
     private PawnKindDef SelectBestPawnKindDef(List<PawnKindDef> matches, string input)
     {
-
-        TkUtils.Logger.Warn($"=== SelectBestPawnKindDef START ===");
-        TkUtils.Logger.Warn($"Input: '{input}', Found {matches.Count} matches:");
-
-
-
+        // TkUtils.Logger.Warn($"=== SelectBestPawnKindDef START ===");
+        // TkUtils.Logger.Warn($"Input: '{input}', Found {matches.Count} matches:");
         foreach (var match in matches)
         {
             TkUtils.Logger.Warn($"  - {match.defName}, Faction: {match.defaultFactionDef?.defName ?? "NULL"}");
@@ -428,11 +415,16 @@ public class BuyPawn : IncidentVariablesBase
         TkUtils.Logger.Warn($"=== SelectBestPawnKindDef END ===");
         return matches.First();
     }
+    /// <summary>
+    /// Checks if the xenotype is allowed for the selected pawn kind
+    /// </summary>
+    /// <param name="viewer"></param>
+    /// <param name="xenotypeInput"></param>
+    /// <returns></returns>
     private bool IsXenotypePurchaseAllowed(Viewer viewer, string xenotypeInput)
     {
         if (!ModsConfig.BiotechActive || string.IsNullOrEmpty(xenotypeInput))
             return true;
-
         var xenotypeDef = XenotypeHelper.GetXenotypeDef(xenotypeInput);
         if (xenotypeDef == null)
         {
@@ -446,7 +438,6 @@ public class BuyPawn : IncidentVariablesBase
             MessageHelper.ReplyToUser(viewer.username, "TKUtils.XenotypeNotAllowed".LocalizeKeyed(xenotypeDef.label, _pawnKindItem.Name));
             return false;
         }
-
         return true;
     }
 }
