@@ -22,7 +22,7 @@ namespace SirRandoo.ToolkitUtils.Utils;
 
 public abstract class IncidentVariablesBase : IncidentHelperVariables
 {
-    public override Viewer Viewer { get; set; }
+    public override Viewer? Viewer { get; set; }
 
     [SuppressMessage("ReSharper", "ParameterHidesMember")]
     public override bool IsPossible(string message, Viewer viewer, bool separateChannel = false) => CanHappen(message, viewer);

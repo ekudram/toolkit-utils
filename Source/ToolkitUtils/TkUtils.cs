@@ -1,4 +1,4 @@
-// ToolkitUtils
+﻿// ToolkitUtils
 // Copyright (C) 2021  SirRandoo
 //
 // This program is free software: you can redistribute it and/or modify
@@ -14,12 +14,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using System;
-using System.Threading;
 using JetBrains.Annotations;
+using SirRandoo.ToolkitUtils.Interfaces;
 using SirRandoo.ToolkitUtils.Models;
 using SirRandoo.ToolkitUtils.Utils.ModComp;
 using SirRandoo.ToolkitUtils.Windows;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 using TwitchToolkit.Settings;
 using UnityEngine;
 using Verse;

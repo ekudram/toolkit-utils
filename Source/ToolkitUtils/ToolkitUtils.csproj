@@ -6,6 +6,7 @@
         <PackageReference Include="Krafs.Rimworld.Ref" />
         <PackageReference Include="NetEscapades.EnumGenerators" PrivateAssets="all" ExcludeAssets="runtime" />
     </ItemGroup>
+
     <ItemGroup>
       <Reference Include="Newtonsoft.Json">
         <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\ToolkitCore\Assemblies\Newtonsoft.Json.dll</HintPath>

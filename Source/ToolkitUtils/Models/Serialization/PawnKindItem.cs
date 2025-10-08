@@ -33,7 +33,7 @@ public class PawnKindItem : IShopItemBase
     [JsonIgnore] private KindDefData _colonistDef;
     [JsonIgnore] private PawnKindData _data;
     [JsonIgnore] private KindDefData[] _kinds;
-
+    
     [JsonIgnore] public IEnumerable<PawnKindDef> Kinds => _kinds.Select(d => d.Def);
 
     [JsonIgnore] public PawnKindDef ColonistKindDef => _colonistDef.Def;
@@ -53,6 +53,7 @@ public class PawnKindItem : IShopItemBase
     [JsonProperty("price")] public int Cost { get; set; }
 
     [JsonIgnore] public IShopDataBase Data { get; set; }
+
     /// <summary>
     /// 
     /// </summary>
@@ -128,21 +129,22 @@ public class PawnKindItem : IShopItemBase
             bool isMatch = false;
 
             // Strategy 1: Match by race defName (this is what we need for modded races)
+            // It is always this strategy that should succeed if the DefName is set correctly
             if (kindDef.race?.defName?.Equals(DefName, StringComparison.OrdinalIgnoreCase) == true)
             {
-                TkUtils.Logger.Warn($"FOUND by race defName: {kindDef.defName} (race: {kindDef.race.defName})");
+                //TkUtils.Logger.Warn($"FOUND by race defName: {kindDef.defName} (race: {kindDef.race.defName})");
                 isMatch = true;
             }
             // Strategy 2: Match by PawnKindDef defName (for backward compatibility)
             else if (kindDef.defName.Equals(DefName, StringComparison.OrdinalIgnoreCase))
             {
-                TkUtils.Logger.Warn($"FOUND by pawnkind defName: {kindDef.defName}");
+                //TkUtils.Logger.Warn($"FOUND by pawnkind defName: {kindDef.defName}");
                 isMatch = true;
             }
             // Strategy 3: Match by label (case insensitive)
             else if (kindDef.label?.Equals(Name, StringComparison.OrdinalIgnoreCase) == true)
             {
-                TkUtils.Logger.Warn($"FOUND by label: {kindDef.defName} (label: {kindDef.label})");
+                //TkUtils.Logger.Warn($"FOUND by label: {kindDef.defName} (label: {kindDef.label})");
                 isMatch = true;
             }
 
@@ -192,9 +194,114 @@ public class PawnKindItem : IShopItemBase
             TkUtils.Logger.Warn($"SELECTED AS COLONIST: {kindDef.defName}");
         }
     }
+    // NEW: Xenotype management methods
+    public void ResetXenotypeFilter()
+    {
+        PawnData.AllowedXenotypes.Clear();
+        PawnData.XenotypeFilterEnabled = false;
+    }
+    public void ToggleXenotype(string xenotypeDefName, bool allowed)
+    {
+        if (!PawnData.XenotypeFilterEnabled)
+        {
+            PawnData.XenotypeFilterEnabled = true;
+        }
+
+        if (allowed)
+        {
+            if (!PawnData.AllowedXenotypes.Contains(xenotypeDefName))
+            {
+                PawnData.AllowedXenotypes.Add(xenotypeDefName);
+            }
+        }
+        else
+        {
+            PawnData.AllowedXenotypes.Remove(xenotypeDefName);
+        }
+    }
+    public void SetAllXenotypesAllowed(bool allowed)
+    {
+        if (allowed && PawnData.XenotypeFilterEnabled)
+        {
+            // If enabling all, clear the filter list (empty list = all allowed when filter is enabled)
+            PawnData.AllowedXenotypes.Clear();
+        }
+        else if (!allowed && PawnData.XenotypeFilterEnabled)
+        {
+            // If disabling all, we need to explicitly block all xenotypes
+            // This is handled by having filter enabled but empty allowed list = none allowed
+            PawnData.AllowedXenotypes.Clear();
+        }
+    }
+    public bool IsXenotypeAllowed(string xenotypeDefName)
+    {
+        if (!ModsConfig.BiotechActive)
+            return true;
+
+        // Check HAR restrictions first (they take priority)
+        var raceDef = DefDatabase<ThingDef>.GetNamedSilentFail(DefName);
+        var harAllowed = CompatRegistry.Alien?.GetAllowedXenotypes(raceDef);
+
+        if (harAllowed != null && harAllowed.Any())
+        {
+            // HAR has restrictions - must be in the allowed list
+            bool harAllows = harAllowed.Contains(xenotypeDefName);
+            TkUtils.Logger.Debug($"HAR restriction check for {xenotypeDefName} on {DefName}: {harAllows}");
+            if (!harAllows) return false;
+        }
+
+        // Then check JSON filter if enabled
+        if (PawnData.XenotypeFilterEnabled)
+        {
+            bool jsonAllows = PawnData.AllowedXenotypes.Contains(xenotypeDefName);
+            TkUtils.Logger.Debug($"JSON filter check for {xenotypeDefName} on {DefName}: {jsonAllows}");
+            return jsonAllows;
+        }
+
+        // No restrictions from either source
+        return true;
+    }
+    public bool IsXenotypeFilteringEnabled()
+    {
+        return ModsConfig.BiotechActive && PawnData.XenotypeFilterEnabled;
+    }
+    public List<string> GetAllowedXenotypes()
+    {
+        if (!ModsConfig.BiotechActive)
+            return new List<string>();
+
+        var raceDef = DefDatabase<ThingDef>.GetNamedSilentFail(DefName);
+
+        // Priority 1: Check HAR restrictions if they exist
+        var harAllowed = CompatRegistry.Alien?.GetAllowedXenotypes(raceDef);
+        if (harAllowed != null && harAllowed.Any())
+        {
+            TkUtils.Logger.Debug($"Using HAR restrictions for {DefName}: {string.Join(", ", harAllowed)}");
+            return harAllowed;
+        }
+
+        // Priority 2: Check JSON filter if enabled
+        if (PawnData.XenotypeFilterEnabled && PawnData.AllowedXenotypes.Any())
+        {
+            TkUtils.Logger.Debug($"Using JSON filter for {DefName}: {string.Join(", ", PawnData.AllowedXenotypes)}");
+            return PawnData.AllowedXenotypes;
+        }
+
+        // Priority 3: No restrictions - return empty list (all xenotypes allowed)
+        TkUtils.Logger.Debug($"No xenotype restrictions for {DefName}");
+        return new List<string>();
+    }
+    public bool HasHARXenotypeRestrictions()
+    {
+        if (!ModsConfig.BiotechActive)
+            return false;
+
+        var raceDef = DefDatabase<ThingDef>.GetNamedSilentFail(DefName);
+        var harAllowed = CompatRegistry.Alien?.GetAllowedXenotypes(raceDef);
+        return harAllowed != null && harAllowed.Any();
+    }
 
     public string? GetDefaultName() => _colonistDef.Name ?? DefName;
-
     private struct KindDefData
     {
         public string? Name { get; set; }

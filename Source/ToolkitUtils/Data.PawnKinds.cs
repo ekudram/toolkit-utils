@@ -47,6 +47,7 @@ public static partial class Data
     public static void LoadPawnKinds(string path, bool ignoreErrors)
     {
         PawnKinds = LoadJson<List<PawnKindItem>>(path, ignoreErrors) ?? new List<PawnKindItem>();
+
     }
 
     /// <summary>
@@ -105,6 +106,9 @@ public static partial class Data
                 pawn.PawnData.Mod = pawn.ColonistKindDef.TryGetModName();
                 pawn.LoadGameData();
                 pawn.UpdateStats();
+
+                // NEW: Validate xenotype data
+                ValidatePawnKindXenotypeData(pawn);
             }
             catch (Exception)
             {
@@ -119,6 +123,23 @@ public static partial class Data
 
         builder.Insert(0, "The following pawn kinds could not be processed:\n");
         TkUtils.Logger.Warn(builder.ToString());
+    }
+
+    private static void ValidatePawnKindXenotypeData(PawnKindItem pawn)
+    {
+        if (!ModsConfig.BiotechActive || pawn.PawnData?.AllowedXenotypes == null)
+            return;
+
+        // Remove any xenotypes that no longer exist
+        var validXenotypes = pawn.PawnData.AllowedXenotypes
+            .Where(xenoDefName => DefDatabase<XenotypeDef>.GetNamedSilentFail(xenoDefName) != null)
+            .ToList();
+
+        if (validXenotypes.Count != pawn.PawnData.AllowedXenotypes.Count)
+        {
+            pawn.PawnData.AllowedXenotypes = validXenotypes;
+            TkUtils.Logger.Warn($"Cleaned up invalid xenotypes for {pawn.DefName}");
+        }
     }
 
     /// <summary>

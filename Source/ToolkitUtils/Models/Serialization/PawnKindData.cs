@@ -17,21 +17,35 @@
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using SirRandoo.ToolkitUtils.Interfaces;
+using System.Collections.Generic;
 using TwitchToolkit;
 
 namespace SirRandoo.ToolkitUtils.Models;
 
+// In PawnKindData.cs - Add xenotype configuration
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public class PawnKindData : IShopDataBase
 {
+    // EXISTING FIELDS - leave these exactly as they are
     [JsonProperty("customName")] public bool CustomName;
     [JsonProperty("stats")] public string[] Stats { get; set; } = { };
     [JsonProperty("mod")] public string Mod { get; set; }
     [JsonProperty("karmaType")] public KarmaType? KarmaType { get; set; }
 
+    // NEW: Xenotype configuration only
+    [JsonProperty("allowedXenotypes", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public List<string> AllowedXenotypes { get; set; } = new List<string>();
+
+    [JsonProperty("xenotypeFilterEnabled", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool XenotypeFilterEnabled { get; set; } = false;
+
+    // EXISTING Reset method - just add xenotype reset
     public void Reset()
     {
         CustomName = false;
         KarmaType = null;
+        // NEW: Reset xenotype settings
+        AllowedXenotypes.Clear();
+        XenotypeFilterEnabled = false;
     }
 }

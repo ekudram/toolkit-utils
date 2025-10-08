@@ -111,4 +111,23 @@
     <TKUtils.ViewerDialog.RemoveKarma>Removing karma from {0}</TKUtils.ViewerDialog.RemoveKarma>
     <TKUtils.ViewerDialog.DeleteConfirmation>Are you sure you want to delete {0}'s data?</TKUtils.ViewerDialog.DeleteConfirmation>
     <TKUtils.ViewerDialog.ResetConfimation>Are you sure you want to reset everyone's data?</TKUtils.ViewerDialog.ResetConfimation>
+
+  <!-- Xenotype UI -->
+  <TKUtils.Xenotype.EnableFilter>Xenotype Filter</TKUtils.Xenotype.EnableFilter>
+  <TKUtils.Xenotype.FilterTooltip>Enable to restrict which xenotypes can be purchased for this race</TKUtils.Xenotype.FilterTooltip>
+  <TKUtils.Xenotype.SelectAll>Allow All</TKUtils.Xenotype.SelectAll>
+  <TKUtils.Xenotype.SelectNone>Allow None</TKUtils.Xenotype.SelectNone>
+  <TKUtils.Xenotype.NoXenotypes>No xenotypes available</TKUtils.Xenotype.NoXenotypes>
+  <TKUtils.Xenotype.BiotechRequired>Biotech DLC required</TKUtils.Xenotype.BiotechRequired>
+  <TKUtils.Xenotype.AllowedCount>{0} of {1} xenotypes allowed</TKUtils.Xenotype.AllowedCount>
+  <TKUtils.Xenotype.FilterTooltipHAR>Enable or disable xenotype filtering for this race. Note: This race has HAR restrictions, so only certain xenotypes are available.</TKUtils.Xenotype.FilterTooltipHAR>
+  <TKUtils.Xenotype.FilterTooltip>Enable or disable xenotype filtering for this race.</TKUtils.Xenotype.FilterTooltip>
+
+  <!-- Error Messages -->
+  <TKUtils.InvalidXenotype>Invalid xenotype: {0}</TKUtils.InvalidXenotype>
+  <TKUtils.XenotypeNotAllowed>Xenotype '{0}' is not allowed for {1} pawns</TKUtils.XenotypeNotAllowed>
+
+  <!-- Purchase Messages -->
+  <TKUtils.BuyPawn.WithXenotype>with {0} xenotype</TKUtils.BuyPawn.WithXenotype>
+  
 </LanguageData>

@@ -14,14 +14,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using RimWorld;
 using SirRandoo.ToolkitUtils.Helpers;
 using SirRandoo.ToolkitUtils.Interfaces;
 using SirRandoo.ToolkitUtils.Models;
 using SirRandoo.ToolkitUtils.Models.Tables;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using ToolkitUtils.UX;
 using UnityEngine;
 using Verse;
@@ -45,6 +46,9 @@ public class PawnTableWorker : TableWorker<TableSettingsItem<PawnKindItem>>
     private string? _priceHeaderText;
     private string? _resetPawnKarmaTooltip;
     private string? _resetPawnNameTooltip;
+    // In PawnTableWorker.cs - Add to field declarations
+    private string? _xenotypeFilterText;
+    private string? _xenotypeFilterTooltip;
     private Vector2 _scrollPos = Vector2.zero;
     private SettingsKey _settingsKey = SettingsKey.Collapse;
 
@@ -148,30 +152,36 @@ public class PawnTableWorker : TableWorker<TableSettingsItem<PawnKindItem>>
     /// <inheritdoc cref="TableWorkerBase.DrawTableContents" />
     protected override void DrawTableContents(Rect region)
     {
-        float expectedLines = Data.Where(i => !i.IsHidden).Sum(i => i.SettingsVisible ? ExpandedLineSpan + 1f : 1f);
-        var viewPort = new Rect(0f, 0f, region.width - 16f, RowLineHeight * expectedLines);
+        if (Event.current.type == EventType.Layout)
+        {
+            return;
+        }
 
-        var index = 0;
-        var expanded = 0;
-        var alternate = false;
         GUI.BeginGroup(region);
+
+        // Calculate total height needed for all rows
+        float totalHeight = CalculateTotalHeight();
+        var viewPort = new Rect(0f, 0f, region.width - 16f, totalHeight);
+
+        float currentY = 0f;
+        var alternate = false;
         _scrollPos = GUI.BeginScrollView(region, _scrollPos, viewPort);
 
         foreach (TableSettingsItem<PawnKindItem> item in Data.Where(i => !i.IsHidden))
         {
+            float rowHeight = GetRowHeight(item);
+
             var lineRect = new Rect(
                 0f,
-                index * RowLineHeight + RowLineHeight * ExpandedLineSpan * expanded,
+                currentY,
                 region.width - 16f,
-                RowLineHeight * (item.SettingsVisible ? ExpandedLineSpan + 1f : 1f)
+                rowHeight
             );
 
             if (!lineRect.IsVisible(region, _scrollPos))
             {
-                index++;
+                currentY += rowHeight;
                 alternate = !alternate;
-                expanded += item.SettingsVisible ? 1 : 0;
-
                 continue;
             }
 
@@ -186,17 +196,36 @@ public class PawnTableWorker : TableWorker<TableSettingsItem<PawnKindItem>>
             DrawKind(rect, item);
             GUI.EndGroup();
 
+            currentY += rowHeight;
             alternate = !alternate;
-            index++;
-
-            if (item.SettingsVisible)
-            {
-                expanded++;
-            }
         }
 
         GUI.EndScrollView();
         GUI.EndGroup();
+    }
+    // NEW: Calculate total height needed for all visible rows
+    private float CalculateTotalHeight()
+    {
+        float totalHeight = 0f;
+        foreach (TableSettingsItem<PawnKindItem> item in Data.Where(i => !i.IsHidden))
+        {
+            totalHeight += GetRowHeight(item);
+        }
+        return totalHeight;
+    }
+
+
+    // NEW: Get the actual height for a specific row
+    private float GetRowHeight(TableSettingsItem<PawnKindItem> item)
+    {
+        if (item.SettingsVisible)
+        {
+            // Return expanded height for this specific row
+            return RowLineHeight + CalculateExpandedHeight(item);
+        }
+
+        // Return normal height for collapsed rows
+        return RowLineHeight;
     }
 
     /// <summary>
@@ -271,18 +300,40 @@ public class PawnTableWorker : TableWorker<TableSettingsItem<PawnKindItem>>
             return;
         }
 
+        // Calculate dynamic height based on whether xenotype filtering is enabled
+        float expandedHeight = CalculateExpandedHeight(item);
+
         var expandedRect = new Rect(
             NameHeaderRect.x + 10f,
             region.y + RowLineHeight + 10f,
             region.width - checkboxRect.width - settingRect.width - 20f,
-            region.height - RowLineHeight - 20f
+            expandedHeight
         );
+
 
         GUI.BeginGroup(expandedRect);
         DrawExpandedSettings(expandedRect.AtZero(), item);
         GUI.EndGroup();
     }
+    // NEW: Calculate dynamic height for expanded settings
+    // More precise version of CalculateExpandedHeight
+    private float CalculateExpandedHeight(TableSettingsItem<PawnKindItem> item)
+    {
+        float baseHeight = 80f; // Base height for karma settings
 
+        if (ModsConfig.BiotechActive && item.Data.IsXenotypeFilteringEnabled())
+        {
+            var xenotypes = GetFilteredXenotypesForRace(item.Data);
+            if (xenotypes.Count > 0)
+            {
+                // Calculate height based on number of filtered xenotypes
+                int visibleRows = Mathf.Min(xenotypes.Count, 5); // Show max 5 at once
+                baseHeight += 25f + (visibleRows * (RowLineHeight + 2f)); // Header + xenotype rows
+            }
+        }
+
+        return baseHeight;
+    }
     private void DrawConfigurableItemName(Rect region, TableSettingsItem<PawnKindItem> item)
     {
         if (item.EditingName)
@@ -322,27 +373,80 @@ public class PawnTableWorker : TableWorker<TableSettingsItem<PawnKindItem>>
     /// <inheritdoc cref="TableWorkerBase.Prepare" />
     public override void Prepare()
     {
+        TkUtils.Logger.Debug($"=== COMPAT REGISTRY CHECK ===");
+        TkUtils.Logger.Debug($"CompatRegistry.Alien is null: {CompatRegistry.Alien == null}");
+        TkUtils.Logger.Debug($"Type: {CompatRegistry.Alien?.GetType()}");
+        TkUtils.Logger.Debug($"ModId: {CompatRegistry.Alien?.ModId}");
+        // CompatRegistry.ForceInitialize();
+        DebugXenotypes(); // Call the debug method to log xenotype information temporarily
         LoadTranslations();
 
         InternalData ??= new List<TableSettingsItem<PawnKindItem>>();
         InternalData.AddRange(ToolkitUtils.Data.PawnKinds.OrderBy(i => i.Name).Select(i => new TableSettingsItem<PawnKindItem> { Data = i }));
     }
+    private void DebugXenotypes()
+    {
+        TkUtils.Logger.Warn("=== XENOTYPE DEBUG INFO ===");
+        TkUtils.Logger.Warn($"Total xenotypes in database: {XenotypeHelper.AllXenotypes.Count}");
+
+        foreach (var xenotype in XenotypeHelper.AllXenotypes)
+        {
+            TkUtils.Logger.Warn($"Xenotype: {xenotype.defName}, Label: {xenotype.label}");
+        }
+
+        // Check if Nyaron xenotype exists
+        var nyaronXenotype = XenotypeHelper.AllXenotypes.FirstOrDefault(x => x.defName.Contains("Nyaron"));
+        TkUtils.Logger.Warn($"Nyaron xenotype found: {nyaronXenotype != null}");
+        if (nyaronXenotype != null)
+        {
+            TkUtils.Logger.Warn($"Nyaron xenotype details: {nyaronXenotype.defName}, {nyaronXenotype.label}");
+        }
+
+        TkUtils.Logger.Warn("=== END DEBUG INFO ===");
+    }
 
     private void DrawExpandedSettings(Rect region, TableSettingsItem<PawnKindItem> item)
     {
-        float columnWidth = Mathf.FloorToInt(region.width / 2f) - 26f;
-        var leftColumnRect = new Rect(region.x, region.y, columnWidth, region.height);
-        var rightColumnRect = new Rect(region.x + leftColumnRect.width + 52f, region.y, columnWidth, region.height);
+        if (!ModsConfig.BiotechActive)
+        {
+            // Use original two-column layout if Biotech not active
+            float columnWidth = Mathf.FloorToInt(region.width / 2f) - 26f;
+            var leftColumnRect = new Rect(region.x, region.y, columnWidth, region.height);
+            var rightColumnRect = new Rect(region.x + leftColumnRect.width + 52f, region.y, columnWidth, region.height);
 
-        Widgets.DrawLineVertical(Mathf.FloorToInt(region.width / 2f), 0f, region.height - 5f);
+            Widgets.DrawLineVertical(Mathf.FloorToInt(region.width / 2f), 0f, region.height - 5f);
 
-        GUI.BeginGroup(leftColumnRect);
-        DrawLeftExpandedSettingsColumn(leftColumnRect.AtZero(), item);
-        GUI.EndGroup();
+            GUI.BeginGroup(leftColumnRect);
+            DrawLeftExpandedSettingsColumn(leftColumnRect.AtZero(), item);
+            GUI.EndGroup();
 
-        GUI.BeginGroup(rightColumnRect);
-        DrawRightExpandedSettingsColumn(rightColumnRect.AtZero(), item);
-        GUI.EndGroup();
+            GUI.BeginGroup(rightColumnRect);
+            // Right column remains unused when Biotech is not active
+            GUI.EndGroup();
+        }
+        else
+        {
+            // Three-column layout when Biotech is active
+            float columnWidth = Mathf.FloorToInt(region.width / 3f) - 17f;
+            var leftColumnRect = new Rect(region.x, region.y, columnWidth, region.height);
+            var middleColumnRect = new Rect(region.x + columnWidth + 26f, region.y, columnWidth, region.height);
+            var rightColumnRect = new Rect(region.x + (columnWidth + 26f) * 2f, region.y, columnWidth, region.height);
+
+            Widgets.DrawLineVertical(columnWidth + 13f, 0f, region.height - 5f);
+            Widgets.DrawLineVertical((columnWidth + 26f) * 2f - 13f, 0f, region.height - 5f);
+
+            GUI.BeginGroup(leftColumnRect);
+            DrawLeftExpandedSettingsColumn(leftColumnRect.AtZero(), item);
+            GUI.EndGroup();
+
+            GUI.BeginGroup(middleColumnRect);
+            // Middle column remains unused (for future features)
+            GUI.EndGroup();
+
+            GUI.BeginGroup(rightColumnRect);
+            DrawRightExpandedSettingsColumn(rightColumnRect.AtZero(), item);
+            GUI.EndGroup();
+        }
     }
 
     private void DrawLeftExpandedSettingsColumn(Rect region, ITableItem<PawnKindItem> item)
@@ -363,11 +467,293 @@ public class PawnTableWorker : TableWorker<TableSettingsItem<PawnKindItem>>
         }
     }
 
+    // In PawnTableWorker.cs - Update the DrawRightExpandedSettingsColumn method
     private void DrawRightExpandedSettingsColumn(Rect region, TableSettingsItem<PawnKindItem> item)
     {
-        // unused
+        if (!ModsConfig.BiotechActive)
+        {
+            // Show message if Biotech is not active
+            var messageRect = new Rect(0f, 0f, region.width, RowLineHeight);
+            LabelDrawer.Draw(messageRect, "TKUtils.Xenotype.BiotechRequired".Localize());
+            return;
+        }
+
+        // Xenotype filter toggle
+        var filterToggleRect = new Rect(0f, 0f, region.width, RowLineHeight);
+        DrawXenotypeFilterToggle(filterToggleRect, item);
+
+        if (item.Data.IsXenotypeFilteringEnabled())
+        {
+            // Xenotype list
+            var listRect = new Rect(0f, RowLineHeight + 5f, region.width, region.height - RowLineHeight - 5f);
+            DrawXenotypeList(listRect, item);
+        }
+    }
+    private void DrawXenotypeFilterToggle(Rect rect, TableSettingsItem<PawnKindItem> item)
+    {
+        var labelRect = new Rect(rect.x, rect.y, rect.width - 20f, rect.height);
+        var toggleRect = new Rect(rect.x + rect.width - 20f, rect.y, 20f, rect.height);
+
+        LabelDrawer.Draw(labelRect, "TKUtils.Xenotype.EnableFilter".Localize());
+
+        bool filterEnabled = item.Data.PawnData.XenotypeFilterEnabled;
+
+        // Check if this race has HAR restrictions
+        bool hasHARRestrictions = item.Data.HasHARXenotypeRestrictions();
+
+        if (Widgets.ButtonImage(toggleRect, filterEnabled ? Widgets.CheckboxOnTex : Widgets.CheckboxOffTex))
+        {
+            item.Data.PawnData.XenotypeFilterEnabled = !filterEnabled;
+
+            // If enabling filter for the first time, initialize with appropriate defaults
+            if (item.Data.PawnData.XenotypeFilterEnabled && item.Data.PawnData.AllowedXenotypes.Count == 0)
+            {
+                var filteredXenotypes = GetFilteredXenotypesForRace(item.Data);
+
+                if (hasHARRestrictions)
+                {
+                    // For HAR-restricted races, allow all HAR-permitted xenotypes by default
+                    foreach (var xenotype in filteredXenotypes)
+                    {
+                        item.Data.PawnData.AllowedXenotypes.Add(xenotype.defName);
+                    }
+                    TkUtils.Logger.Debug($"Initialized HAR-restricted filter with {filteredXenotypes.Count} xenotypes");
+                }
+                else
+                {
+                    // For non-restricted races, allow all xenotypes by default
+                    foreach (var xenotype in XenotypeHelper.AllXenotypes)
+                    {
+                        item.Data.PawnData.AllowedXenotypes.Add(xenotype.defName);
+                    }
+                    TkUtils.Logger.Debug($"Initialized non-restricted filter with {XenotypeHelper.AllXenotypes.Count} xenotypes");
+                }
+            }
+        }
+
+        // Tooltip - show different tooltips based on whether HAR restrictions exist
+        string tooltipKey = hasHARRestrictions ?
+            "TKUtils.Xenotype.FilterTooltipHAR" :
+            "TKUtils.Xenotype.FilterTooltip";
+        TooltipHandler.TipRegion(rect, tooltipKey.Localize());
+    }
+    private Vector2 _xenotypeScrollPos = Vector2.zero;
+
+    private void DrawXenotypeList(Rect rect, TableSettingsItem<PawnKindItem> item)
+    {
+        // Get filtered xenotypes based on race restrictions
+        var xenotypes = GetFilteredXenotypesForRace(item.Data);
+        if (xenotypes.Count == 0)
+        {
+            var messageRect = new Rect(rect.x, rect.y, rect.width, RowLineHeight);
+            LabelDrawer.Draw(messageRect, "TKUtils.Xenotype.NoXenotypes".Localize());
+            return;
+        }
+
+        // Header with select all/none buttons
+        var headerRect = new Rect(rect.x, rect.y, rect.width, RowLineHeight);
+        DrawXenotypeListHeader(headerRect, item, xenotypes);
+
+        // Calculate list height - show 4-5 xenotypes at once
+        float listHeight = Mathf.Min(rect.height - RowLineHeight - 5f, RowLineHeight * 5);
+        var listRect = new Rect(rect.x, rect.y + RowLineHeight + 5f, rect.width, listHeight);
+
+        float contentHeight = xenotypes.Count * (RowLineHeight + 2f);
+        var viewRect = new Rect(0f, 0f, listRect.width - 16f, contentHeight);
+
+        // Store the scroll position in a variable and ensure it's maintained
+        _xenotypeScrollPos = GUI.BeginScrollView(listRect, _xenotypeScrollPos, viewRect);
+
+        float yPos = 0f;
+        foreach (var xenotype in xenotypes)
+        {
+            var xenotypeRect = new Rect(0f, yPos, viewRect.width, RowLineHeight);
+
+            // Only draw if visible in scroll view (optimization)
+            if (yPos + RowLineHeight >= _xenotypeScrollPos.y && yPos <= _xenotypeScrollPos.y + listRect.height)
+            {
+                DrawXenotypeListItem(xenotypeRect, xenotype, item);
+            }
+
+            yPos += RowLineHeight + 2f;
+        }
+
+        GUI.EndScrollView();
+
+        // Show count of allowed xenotypes
+        if (xenotypes.Count > 0)
+        {
+            int allowedCount = item.Data.GetAllowedXenotypes().Count(x => xenotypes.Any(xt => xt.defName == x));
+            var countRect = new Rect(rect.x, rect.y + listHeight + RowLineHeight + 10f, rect.width, RowLineHeight);
+            string countText = "TKUtils.Xenotype.AllowedCount".LocalizeKeyed(allowedCount.ToString(), xenotypes.Count.ToString());
+            LabelDrawer.Draw(countRect, countText);
+        }
+    }
+    // NEW: Get filtered xenotypes based on race restrictions
+    private List<XenotypeDef> GetFilteredXenotypesForRace(PawnKindItem item)
+    {
+        if (!ModsConfig.BiotechActive)
+        {
+            TkUtils.Logger.Debug($"Biotech not active for {item.DefName}");
+            return new List<XenotypeDef>();
+        }
+
+        var raceDef = DefDatabase<ThingDef>.GetNamedSilentFail(item.DefName);
+        if (raceDef == null)
+        {
+            TkUtils.Logger.Warn($"Could not find race def for {item.DefName}");
+            return XenotypeHelper.AllXenotypes;
+        }
+
+        TkUtils.Logger.Debug($"=== PROCESSING RACE: {raceDef.defName} ===");
+
+        // Humans can use any xenotype
+        if (raceDef == ThingDefOf.Human)
+        {
+            TkUtils.Logger.Debug($"Human race detected - allowing all xenotypes");
+            return XenotypeHelper.AllXenotypes;
+        }
+
+        // Check if this race has HAR restrictions using the provider
+        if (CompatRegistry.Alien != null)
+        {
+            List<string> harAllowedXenotypeDefNames = CompatRegistry.Alien.GetAllowedXenotypes(raceDef);
+
+            TkUtils.Logger.Debug($"HAR provider returned {harAllowedXenotypeDefNames.Count} allowed xenotypes");
+
+            // If the provider returns ANY xenotypes (even empty), use that as the definitive list
+            // This means the race is managed by HAR and we should respect its restrictions
+            var filteredXenotypes = XenotypeHelper.AllXenotypes
+                .Where(xeno => harAllowedXenotypeDefNames.Contains(xeno.defName))
+                .ToList();
+
+            TkUtils.Logger.Debug($"Showing {filteredXenotypes.Count} xenotypes for {raceDef.defName} (HAR managed)");
+            return filteredXenotypes;
+        }
+        else
+        {
+            // No HAR provider - show all xenotypes for non-human races
+            TkUtils.Logger.Debug($"No HAR provider - allowing all xenotypes for {raceDef.defName}");
+            return XenotypeHelper.AllXenotypes;
+        }
     }
 
+    private void DebugRaceType(ThingDef raceDef)
+    {
+        TkUtils.Logger.Debug($"=== RACE TYPE DEBUG for {raceDef.defName} ===");
+        TkUtils.Logger.Debug($"Race type: {raceDef.GetType()}");
+
+        // Check if this is a ThingDef_AlienRace using reflection
+        bool isAlienRace = raceDef.GetType().Name == "ThingDef_AlienRace";
+        TkUtils.Logger.Debug($"Is ThingDef_AlienRace: {isAlienRace}");
+
+        if (isAlienRace)
+        {
+            try
+            {
+                // Use reflection to access alienRace field
+                var alienRaceField = raceDef.GetType().GetField("alienRace");
+                if (alienRaceField != null)
+                {
+                    var alienRaceValue = alienRaceField.GetValue(raceDef);
+                    TkUtils.Logger.Debug($"AlienRace field exists: {alienRaceValue != null}");
+
+                    if (alienRaceValue != null)
+                    {
+                        var raceRestrictionProperty = alienRaceValue.GetType().GetProperty("raceRestriction");
+                        if (raceRestrictionProperty != null)
+                        {
+                            var restriction = raceRestrictionProperty.GetValue(alienRaceValue);
+                            TkUtils.Logger.Debug($"Race restriction exists: {restriction != null}");
+
+                            if (restriction != null)
+                            {
+                                var onlyUseProperty = restriction.GetType().GetProperty("onlyUseRaceRestrictedXenotypes");
+                                var whiteListProperty = restriction.GetType().GetProperty("whiteXenotypeList");
+
+                                if (onlyUseProperty != null)
+                                {
+                                    var onlyUseValue = onlyUseProperty.GetValue(restriction);
+                                    TkUtils.Logger.Debug($"onlyUseRaceRestrictedXenotypes: {onlyUseValue}");
+                                }
+
+                                if (whiteListProperty != null)
+                                {
+                                    var whiteListValue = whiteListProperty.GetValue(restriction) as List<XenotypeDef>;
+                                    TkUtils.Logger.Debug($"whiteXenotypeList exists: {whiteListValue != null}");
+                                    if (whiteListValue != null)
+                                    {
+                                        TkUtils.Logger.Debug($"whiteXenotypeList count: {whiteListValue.Count}");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TkUtils.Logger.Error($"Error during race type debug: {ex}");
+            }
+        }
+        TkUtils.Logger.Debug($"=== END RACE TYPE DEBUG ===");
+    }
+
+    private void DrawXenotypeListHeader(Rect rect, TableSettingsItem<PawnKindItem> item, List<XenotypeDef> filteredXenotypes)
+    {
+        var selectAllRect = new Rect(rect.x, rect.y, rect.width * 0.5f - 5f, rect.height);
+        var selectNoneRect = new Rect(rect.x + rect.width * 0.5f + 5f, rect.y, rect.width * 0.5f - 5f, rect.height);
+
+        if (Widgets.ButtonText(selectAllRect, "TKUtils.Xenotype.SelectAll".Localize()))
+        {
+            // Allow all xenotypes in the filtered list
+            foreach (var xenotype in filteredXenotypes)
+            {
+                item.Data.ToggleXenotype(xenotype.defName, true);
+            }
+            TkUtils.Logger.Debug($"Selected all {filteredXenotypes.Count} xenotypes for {item.Data.Name}");
+        }
+
+        if (Widgets.ButtonText(selectNoneRect, "TKUtils.Xenotype.SelectNone".Localize()))
+        {
+            // Disable all xenotypes in the filtered list
+            foreach (var xenotype in filteredXenotypes)
+            {
+                item.Data.ToggleXenotype(xenotype.defName, false);
+            }
+            TkUtils.Logger.Debug($"Deselected all {filteredXenotypes.Count} xenotypes for {item.Data.Name}");
+        }
+    }
+    private void DrawXenotypeListItem(Rect rect, XenotypeDef xenotype, TableSettingsItem<PawnKindItem> item)
+    {
+        var toggleRect = new Rect(rect.x, rect.y, 20f, rect.height);
+        var labelRect = new Rect(rect.x + 25f, rect.y, rect.width - 25f, rect.height);
+
+        bool isAllowed = item.Data.IsXenotypeAllowed(xenotype.defName);
+        bool newAllowed = isAllowed;
+
+        // Draw toggle
+        if (Widgets.ButtonImage(toggleRect, newAllowed ? Widgets.CheckboxOnTex : Widgets.CheckboxOffTex))
+        {
+            newAllowed = !newAllowed;
+            item.Data.ToggleXenotype(xenotype.defName, newAllowed);
+        }
+
+        // Draw label with tooltip
+        LabelDrawer.Draw(labelRect, XenotypeHelper.GetDisplayName(xenotype));
+
+        // Tooltip with xenotype description
+        if (!xenotype.descriptionShort.NullOrEmpty())
+        {
+            TooltipHandler.TipRegion(labelRect, xenotype.descriptionShort);
+        }
+
+        // Highlight on mouseover
+        if (Mouse.IsOver(rect))
+        {
+            Widgets.DrawHighlight(rect);
+        }
+    }
     /// <inheritdoc cref="TableWorker{T}.EnsureExists" />
     public override void EnsureExists(TableSettingsItem<PawnKindItem> data)
     {
@@ -408,6 +794,17 @@ public class PawnTableWorker : TableWorker<TableSettingsItem<PawnKindItem>>
         _closePawnNameTooltip = "TKUtils.PawnTableTooltips.ClosePawnName".Localize();
         _resetPawnNameTooltip = "TKUtils.PawnTableTooltips.ResetPawnName".Localize();
         _resetPawnKarmaTooltip = "TKUtils.PawnTableTooltips.ResetPawnKarma".Localize();
+        // NEW: Xenotype translations
+        _xenotypeFilterText = "TKUtils.Fields.XenotypeFilter".Localize();
+        _defaultKarmaTypeText = "TKUtils.Fields.DefaultKarmaType".Localize();
+
+        _editPawnNameTooltip = "TKUtils.PawnTableTooltips.EditPawnName".Localize();
+        _closePawnNameTooltip = "TKUtils.PawnTableTooltips.ClosePawnName".Localize();
+        _resetPawnNameTooltip = "TKUtils.PawnTableTooltips.ResetPawnName".Localize();
+        _resetPawnKarmaTooltip = "TKUtils.PawnTableTooltips.ResetPawnKarma".Localize();
+
+        // NEW: Xenotype tooltips
+        _xenotypeFilterTooltip = "TKUtils.PawnTableTooltips.XenotypeFilter".Localize();
     }
 
     /// <inheritdoc cref="TableWorkerBase.NotifySortRequested" />

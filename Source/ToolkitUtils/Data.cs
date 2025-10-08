@@ -14,23 +14,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-// ToolkitUtils
-// Copyright (C) 2021  SirRandoo
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+using Ionic.Zlib;
+using RimWorld;
+using SirRandoo.ToolkitUtils.Helpers;
+using SirRandoo.ToolkitUtils.Models;
+using SirRandoo.ToolkitUtils.Utils.Constraints;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -39,10 +27,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Ionic.Zlib;
-using RimWorld;
-using SirRandoo.ToolkitUtils.Models;
-using SirRandoo.ToolkitUtils.Utils.Constraints;
 using TwitchToolkit;
 using UnityEngine;
 using Verse;
@@ -79,6 +63,12 @@ public static partial class Data
         catch (Exception e)
         {
             TkUtils.Logger.Error("Could not index current game environment. Things will not work properly, if at all, you should report this immediately.", e);
+        }
+        // Initialize xenotype system
+        if (ModsConfig.BiotechActive)
+        {
+            XenotypeHelper.RefreshXenotypeCache();
+            TkUtils.Logger.Warn("Xenotype system initialized for Biotech DLC");
         }
 
         LoadShopData();
@@ -603,6 +593,29 @@ public static partial class Data
         }
     }
 
+    // NEW: Validate xenotype data
+    private static void ValidateXenotypeData()
+    {
+        if (!ModsConfig.BiotechActive)
+            return;
+
+        foreach (var pawnKind in PawnKinds)
+        {
+            if (pawnKind.PawnData?.AllowedXenotypes != null)
+            {
+                // Remove any xenotypes that no longer exist in the game
+                var validXenotypes = pawnKind.PawnData.AllowedXenotypes
+                    .Where(xenoDefName => DefDatabase<XenotypeDef>.GetNamedSilentFail(xenoDefName) != null)
+                    .ToList();
+
+                if (validXenotypes.Count != pawnKind.PawnData.AllowedXenotypes.Count)
+                {
+                    pawnKind.PawnData.AllowedXenotypes = validXenotypes;
+                    TkUtils.Logger.Warn($"Cleaned up invalid xenotypes for {pawnKind.DefName}");
+                }
+            }
+        }
+    }
     public static ColorDef GetColorDef(Color color)
     {
         string colorHex = ColorUtility.ToHtmlStringRGBA(color);

@@ -101,16 +101,16 @@ internal static class CommandsHandlerPatch
             segments = segments.Where(i => !i.EqualsIgnoreCase("--text")).ToList();
         }
 
-        TkUtils.Logger.Debug($"CommandsHandlerPatch: Before LocateCommand - sanitized = '{sanitized}'");
-        TkUtils.Logger.Debug($"CommandsHandlerPatch: Segments count = {segments.Count}");
-        TkUtils.Logger.Debug($"CommandsHandlerPatch: Segments = [{string.Join(", ", segments)}]");
+        //TkUtils.Logger.Debug($"CommandsHandlerPatch: Before LocateCommand - sanitized = '{sanitized}'");
+        //TkUtils.Logger.Debug($"CommandsHandlerPatch: Segments count = {segments.Count}");
+        //TkUtils.Logger.Debug($"CommandsHandlerPatch: Segments = [{string.Join(", ", segments)}]");
 
         string commandText = "!" + CombineSegments(segments).Trim();
 
         Command locatedCommand = LocateCommand(segments.ToArray());
 
-        TkUtils.Logger.Debug($"CommandsHandlerPatch: Located command = {locatedCommand?.defName} ('{locatedCommand?.command}')");
-        TkUtils.Logger.Debug($"CommandsHandlerPatch: Calling Execute with emojiOverride = {text}");
+        //TkUtils.Logger.Debug($"CommandsHandlerPatch: Located command = {locatedCommand?.defName} ('{locatedCommand?.command}')");
+        //TkUtils.Logger.Debug($"CommandsHandlerPatch: Calling Execute with emojiOverride = {text}");
 
         // FIX: Create a new message wrapper with the processed command text
         if (locatedCommand != null)
@@ -151,24 +151,24 @@ internal static class CommandsHandlerPatch
 
         // CRITICAL: Log all available commands in the database
         var allCommands = DefDatabase<Command>.AllDefs.ToList();
-        TkUtils.Logger.Debug($"[TKUtils] Total commands in DefDatabase: {allCommands.Count}");
-        TkUtils.Logger.Debug($"[TKUtils] Enabled commands: {allCommands.Count(c => c.enabled)}");
+        //TkUtils.Logger.Debug($"[TKUtils] Total commands in DefDatabase: {allCommands.Count}");
+        //TkUtils.Logger.Debug($"[TKUtils] Enabled commands: {allCommands.Count(c => c.enabled)}");
 
         foreach (Command cmd in allCommands)
         {
-            TkUtils.Logger.Debug($"[TKUtils] Available command: '{cmd.command}' (defName: {cmd.defName}, enabled: {cmd.enabled})");
+            //TkUtils.Logger.Debug($"[TKUtils] Available command: '{cmd.command}' (defName: {cmd.defName}, enabled: {cmd.enabled})");
         }
 
         foreach (Command commandDef in allCommands.Where(c => c.enabled))
         {
-            TkUtils.Logger.Debug($"[TKUtils] Checking command: '{commandDef.command}' (defName: {commandDef.defName})");
+            //TkUtils.Logger.Debug($"[TKUtils] Checking command: '{commandDef.command}' (defName: {commandDef.defName})");
 
             if (commandDef.command.Contains(" "))
             {
                 int spaces = commandDef.command.Count(c => c.Equals(' '));
                 string joined = string.Join(" ", query.Take(spaces));
 
-                TkUtils.Logger.Debug($"[TKUtils] Multi-word command - spaces: {spaces}, joined: '{joined}'");
+                //TkUtils.Logger.Debug($"[TKUtils] Multi-word command - spaces: {spaces}, joined: '{joined}'");
 
                 if (!IsCommand(commandDef.command, joined))
                 {
@@ -176,36 +176,36 @@ internal static class CommandsHandlerPatch
                     continue;
                 }
 
-                TkUtils.Logger.Debug($"[TKUtils] FOUND multi-word command: '{commandDef.command}'");
+                //TkUtils.Logger.Debug($"[TKUtils] FOUND multi-word command: '{commandDef.command}'");
                 return commandDef;
             }
 
             string firstSegment = query.Take(1).First();
-            TkUtils.Logger.Debug($"[TKUtils] Single-word command - comparing '{commandDef.command}' to '{firstSegment}'");
+            //TkUtils.Logger.Debug($"[TKUtils] Single-word command - comparing '{commandDef.command}' to '{firstSegment}'");
 
             if (!IsCommand(commandDef.command, firstSegment))
             {
-                TkUtils.Logger.Debug($"[TKUtils] Single-word command '{commandDef.command}' doesn't match '{firstSegment}'");
+                //TkUtils.Logger.Debug($"[TKUtils] Single-word command '{commandDef.command}' doesn't match '{firstSegment}'");
                 continue;
             }
 
-            TkUtils.Logger.Debug($"[TKUtils] FOUND single-word command: '{commandDef.command}'");
+            //TkUtils.Logger.Debug($"[TKUtils] FOUND single-word command: '{commandDef.command}'");
             return commandDef;
         }
 
-        TkUtils.Logger.Debug($"[TKUtils] No command found for segments: {string.Join(", ", query)}");
+        //TkUtils.Logger.Debug($"[TKUtils] No command found for segments: {string.Join(", ", query)}");
         return null;
     }
 
     private static bool IsCommand(string command, string input)
     {
-        TkUtils.Logger.Debug($"Comparing command '{command}' to input '{input}'");
+        //TkUtils.Logger.Debug($"Comparing command '{command}' to input '{input}'");
 
         // Remove the ! prefix if present for comparison
         string cleanCommand = command.StartsWith("!") ? command.Substring(1) : command;
         string cleanInput = input.StartsWith("!") ? input.Substring(1) : input;
 
-        TkUtils.Logger.Debug($"Cleaned - command: '{cleanCommand}', input: '{cleanInput}'");
+        //TkUtils.Logger.Debug($"Cleaned - command: '{cleanCommand}', input: '{cleanInput}'");
 
         if (TkSettings.ToolkitStyleCommands && cleanInput.StartsWith(cleanCommand, StringComparison.InvariantCultureIgnoreCase))
         {
@@ -221,30 +221,30 @@ internal static class CommandsHandlerPatch
 
     private static string? GetCommandString(string message)
     {
-        TkUtils.Logger.Debug($"Getting command string from message: {message}");
-        TkUtils.Logger.Debug($"TkSettings.Prefix: '{TkSettings.Prefix}', TkSettings.BuyPrefix: '{TkSettings.BuyPrefix}'");
+        // TkUtils.Logger.Debug($"Getting command string from message: {message}");
+        // TkUtils.Logger.Debug($"TkSettings.Prefix: '{TkSettings.Prefix}', TkSettings.BuyPrefix: '{TkSettings.BuyPrefix}'");
 
         // Fix autocorrect spacing issue: "item [specification]" -> "item[specification]"
         message = message.Replace(" [", "[");
-        TkUtils.Logger.Debug($"After space fix: {message}");
+        // TkUtils.Logger.Debug($"After space fix: {message}");
 
         if (message.StartsWith("/w"))
         {
             message = message[3..];
-            TkUtils.Logger.Debug($"After /w removal: {message}");
+            // TkUtils.Logger.Debug($"After /w removal: {message}");
         }
 
         if (message.StartsWith(TkSettings.Prefix, StringComparison.InvariantCultureIgnoreCase))
         {
             string result = message[TkSettings.Prefix.Length..];
-            TkUtils.Logger.Debug($"Prefix match, returning: '{result}'");
+            // TkUtils.Logger.Debug($"Prefix match, returning: '{result}'");
             return result;
         }
 
         if (message.StartsWith(TkSettings.BuyPrefix, StringComparison.InvariantCultureIgnoreCase))
         {
             string result = $"{CommandDefOf.Buy.command} {message[TkSettings.BuyPrefix.Length..]}";
-            TkUtils.Logger.Debug($"BuyPrefix match, returning: '{result}'");
+            // TkUtils.Logger.Debug($"BuyPrefix match, returning: '{result}'");
             return result;
         }
 

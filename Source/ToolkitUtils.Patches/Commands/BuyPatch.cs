@@ -108,12 +108,12 @@ internal static class BuyPatch
             return false;
         }
 
-        TkUtils.Logger.Debug($"BuyPatch: Calling Purchase_Handler.ResolvePurchase for '{processedMessage.Message}'");
+        // TkUtils.Logger.Debug($"BuyPatch: Calling Purchase_Handler.ResolvePurchase for '{processedMessage.Message}'");
 
         try
         {
             Purchase_Handler.ResolvePurchase(viewer, processedMessage);
-            TkUtils.Logger.Debug("BuyPatch: Purchase_Handler.ResolvePurchase completed successfully");
+            // TkUtils.Logger.Debug("BuyPatch: Purchase_Handler.ResolvePurchase completed successfully");
         }
         catch (Exception ex)
         {

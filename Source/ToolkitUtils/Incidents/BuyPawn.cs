@@ -37,8 +37,8 @@ public class BuyPawn : IncidentVariablesBase
     private PawnKindDef _kindDef = RimWorld.PawnKindDefOf.Colonist;
     private XenotypeDef _xenotypeDef = null; 
     private IntVec3 _loc;
-    private Map _map;
-    private PawnKindItem _pawnKindItem;
+    private Map? _map;
+    private PawnKindItem? _pawnKindItem;
 
     /// <summary>
     ///     CanHappen checks to see
@@ -202,23 +202,26 @@ public class BuyPawn : IncidentVariablesBase
         }
 
         // 6. Process xenotype (optional, only if Biotech is active)
+        // In BuyPawn.CanHappen method - Find the xenotype processing section and add this check:
         if (ModsConfig.BiotechActive && worker.HasNext())
         {
             string xenotypeInput = worker.GetNext();
             if (!xenotypeInput.NullOrEmpty())
             {
-                _xenotypeDef = DefDatabase<XenotypeDef>.AllDefs.FirstOrDefault(
-                    x => x.defName.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase) ||
-                         x.label.Equals(xenotypeInput, StringComparison.OrdinalIgnoreCase));
+                // NEW: Validate xenotype against pawn kind filters
+                if (!IsXenotypePurchaseAllowed(viewer, xenotypeInput))
+                {
+                    return false;
+                }
 
+                _xenotypeDef = XenotypeHelper.GetXenotypeDef(xenotypeInput);
                 if (_xenotypeDef == null)
                 {
-                    MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed());
-                    return false; // Invalid xenotype specified, fail purchase
+                    MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
+                    return false;
                 }
                 TkUtils.Logger.Warn("Xenotype set to: " + _xenotypeDef.defName);
             }
-            // else: xenotype input was empty, ignore it
         }
 
         // 7. Validate the final selection
@@ -424,5 +427,26 @@ public class BuyPawn : IncidentVariablesBase
         TkUtils.Logger.Warn($"Selected Priority 5 (fallback): {matches.First().defName} - First match");
         TkUtils.Logger.Warn($"=== SelectBestPawnKindDef END ===");
         return matches.First();
+    }
+    private bool IsXenotypePurchaseAllowed(Viewer viewer, string xenotypeInput)
+    {
+        if (!ModsConfig.BiotechActive || string.IsNullOrEmpty(xenotypeInput))
+            return true;
+
+        var xenotypeDef = XenotypeHelper.GetXenotypeDef(xenotypeInput);
+        if (xenotypeDef == null)
+        {
+            MessageHelper.ReplyToUser(viewer.username, "TKUtils.InvalidXenotype".LocalizeKeyed(xenotypeInput));
+            return false;
+        }
+
+        // Check if this xenotype is allowed for the selected pawn kind
+        if (_pawnKindItem.IsXenotypeFilteringEnabled() && !_pawnKindItem.IsXenotypeAllowed(xenotypeDef.defName))
+        {
+            MessageHelper.ReplyToUser(viewer.username, "TKUtils.XenotypeNotAllowed".LocalizeKeyed(xenotypeDef.label, _pawnKindItem.Name));
+            return false;
+        }
+
+        return true;
     }
 }
