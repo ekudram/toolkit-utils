@@ -214,10 +214,7 @@ public class PawnKindConfigDialog : Window
                             break;
                     }
                 },
-                null,
-                false,
-                null, true
-            );
+                null, false, null, showExtraUIInfo: false, forceHideUI: true);
         }
         else
         {

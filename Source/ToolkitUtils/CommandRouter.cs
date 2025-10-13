@@ -112,10 +112,7 @@ public class CommandRouter : GameComponent
                     TkUtils.Logger.Debug($"Parsing message from {message.Username}: {message.Message}");
                     LongEventHandler.QueueLongEvent(
                         () => @interface.ParseMessage(message),
-                        null,
-                        false,
-                        exceptionHandler: null,
-                        true
+                        null, false, null, showExtraUIInfo: false, forceHideUI: true
                     );
                 }
                 catch (Exception ex)

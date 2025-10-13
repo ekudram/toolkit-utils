@@ -257,11 +257,7 @@ public class TraitConfigDialog : Window
                             break;
                     }
                 },
-                null, // Translation key for progress dialog
-                false, // show progress bar
-                null, // exception handler
-                true // run in background
-            );
+            null, false, null, showExtraUIInfo: false, forceHideUI: true);
         }
         else
         {

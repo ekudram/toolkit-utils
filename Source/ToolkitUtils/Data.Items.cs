@@ -74,7 +74,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             ItemData = LoadJson<Dictionary<string, ItemData>>(path, true) ?? new Dictionary<string, ItemData>();
-        }, null, false, null, true);
+        }, null, false, null, showExtraUIInfo: false, forceHideUI: true);
     }
 
     /// <summary>

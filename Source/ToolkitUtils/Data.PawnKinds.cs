@@ -60,7 +60,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             PawnKinds = LoadJson<List<PawnKindItem>>(path, ignoreErrors) ?? new List<PawnKindItem>();
-        }, null, false, null, true, false);
+        }, null, false, null, showExtraUIInfo: false, forceHideUI: true);
     }
 
     /// <summary>

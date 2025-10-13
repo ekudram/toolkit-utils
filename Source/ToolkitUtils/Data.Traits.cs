@@ -80,7 +80,7 @@ public static partial class Data
         LongEventHandler.QueueLongEvent(() =>
         {
             Traits = LoadJson<List<TraitItem>>(path, ignoreErrors) ?? new List<TraitItem>();
-        }, null, false, null, true);
+        }, null, false, null, showExtraUIInfo: false, forceHideUI: true);
     }
 
     /// <summary>

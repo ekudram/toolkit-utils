@@ -341,11 +341,7 @@ public class Editor : Window
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
             },
-            null,
-            false,
-            null,
-            true
-        );
+            null, false, null, showExtraUIInfo: false, forceHideUI: true);
     }
 
     private void SaveEventPartial(PartialManager<EventPartial>.PartialUgc data)
@@ -363,11 +359,7 @@ public class Editor : Window
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
             },
-            null,
-            false,
-            null,
-            true
-        );
+            null, false, null, showExtraUIInfo: false, forceHideUI: true);
     }
 
     private void SaveTraitPartial(PartialManager<TraitItem>.PartialUgc data)
@@ -385,11 +377,7 @@ public class Editor : Window
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
             },
-            null,
-            false,
-            null,
-            true
-        );
+            null, false, null, showExtraUIInfo: false, forceHideUI: true);
     }
 
     private void SavePawnPartial(PartialManager<PawnKindItem>.PartialUgc data)
@@ -407,10 +395,6 @@ public class Editor : Window
                     Path.Combine(Paths.PartialPath, data.Name)
                 );
             },
-            null,
-            false,
-            null,
-            true
-        );
+            null, false, null, showExtraUIInfo: false, forceHideUI: true);
     }
 }
